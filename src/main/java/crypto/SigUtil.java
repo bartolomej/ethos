@@ -4,7 +4,7 @@ import java.security.*;
 
 public class SigUtil {
 
-    public String sign(PrivateKey privateKey, byte[] content) throws InvalidKeyException {
+    public static byte[] sign(PrivateKey privateKey, byte[] content) throws InvalidKeyException {
         byte[] signature = null;
         try {
             Signature sign = Signature.getInstance("SHA256withDSA");
@@ -16,10 +16,10 @@ public class SigUtil {
         } catch (SignatureException e) {
             e.printStackTrace();
         }
-        return new String(signature);
+        return signature;
     }
 
-    public boolean verify(PublicKey publicKey, byte[] signature, byte[] data) throws SignatureException, InvalidKeyException {
+    public static boolean verify(PublicKey publicKey, byte[] signature, byte[] data) throws SignatureException, InvalidKeyException {
         boolean isValid = false;
         try {
             Signature sign = Signature.getInstance("SHA256withDSA");
