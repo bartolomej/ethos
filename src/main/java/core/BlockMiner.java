@@ -16,9 +16,11 @@ public class BlockMiner {
     -> nonce
      */
 
-    public String difficulty = "00000001";
+    public int DIFFICULTY = 5;
 
-    public void startMinint() {};
+    public void startMining() {
+
+    };
 
     public void restartMining() {};
 

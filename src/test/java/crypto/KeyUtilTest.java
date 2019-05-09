@@ -13,8 +13,8 @@ public class KeyUtilTest {
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
         // TODO: test deterministically
-        //assertEquals(1216, BytesUtil.toHexString(privateKey.getEncoded()).length());
-        //assertEquals(1216, BytesUtil.toHexString(publicKey.getEncoded()).length());
+        //assertEquals(1216, ByteUtil.toHexString(privateKey.getEncoded()).length());
+        //assertEquals(1216, ByteUtil.toHexString(publicKey.getEncoded()).length());
     }
 
     @Test

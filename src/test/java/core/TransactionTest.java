@@ -1,16 +1,25 @@
 package core;
 
+import core.transaction.Transaction;
+import core.transaction.TxInput;
+import core.transaction.TxOutput;
 import crypto.KeyUtil;
 import org.junit.Test;
-import util.BytesUtil;
+import util.ByteUtil;
 
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
 public class TransactionTest {
+
+    @Test
+    public void verifyTransactionWithInvalidInputs() {}
+
+    public void verifyTransactionWithInvalidUTXO() {}
 
     @Test
     public void verifyTransaction() {
@@ -18,14 +27,18 @@ public class TransactionTest {
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
 
-        String toAddress = BytesUtil.toHexString(publicKey.getEncoded());
-        Transaction transaction = new Transaction(toAddress, 100);
+        /* TESTING BOUNDARIES:
+        * This tests span out of transaction class boundaries!
+        * */
+        byte[] toAddress = publicKey.getEncoded();
+        Transaction transaction = null; //new Transaction(toAddress, 100);
         try {
             transaction.sign(privateKey);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         }
-        boolean isValid = transaction.verify(publicKey);
+        transaction.verify(publicKey);
+        boolean isValid = transaction.valid();
         assertTrue(isValid);
     }
 
@@ -41,13 +54,31 @@ public class TransactionTest {
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
 
-        String toAddress = BytesUtil.toHexString(publicKey.getEncoded());
-        Transaction transaction = new Transaction(toAddress, 100);
+        // TODO: think about testing boundaries
+        ArrayList<TxInput> inputs = generateTestInputs(null);
+        ArrayList<TxOutput> outputs = generateTestOutputs(null);
+        byte[] toAddress = publicKey.getEncoded();
+
+        Transaction transaction = new Transaction(toAddress, inputs, outputs);
         try {
             transaction.sign(privateKey);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         }
         return transaction;
+    }
+
+    private ArrayList<TxInput> generateTestInputs(byte[] referenceTransaction) {
+        ArrayList<TxInput> inputs = new ArrayList<>();
+        inputs.add(new TxInput(referenceTransaction, 100));
+        inputs.add(new TxInput(referenceTransaction, 200));
+        return inputs;
+    }
+
+    private ArrayList<TxOutput> generateTestOutputs(byte[] referenceTransaction) {
+        ArrayList<TxOutput> outputs = new ArrayList<>();
+        outputs.add(new TxOutput(referenceTransaction, 100));
+        outputs.add(new TxOutput(referenceTransaction, 200));
+        return outputs;
     }
 }

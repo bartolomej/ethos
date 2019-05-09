@@ -2,7 +2,7 @@ package db;
 
 import core.Account;
 import core.Block;
-import core.Transaction;
+import core.transaction.Transaction;
 
 import java.util.ArrayList;
 
