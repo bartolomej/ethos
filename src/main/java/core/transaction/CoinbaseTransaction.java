@@ -19,11 +19,23 @@ public class CoinbaseTransaction implements Serializable {
     private byte[] receiveAddress;
     private TxOutput output;
 
-    private CoinbaseTransaction(byte[] receiveAddress) {
+    public CoinbaseTransaction(byte[] receiveAddress) {
+        this.output = new TxOutput(receiveAddress, BLOCK_REWARD);
         this.timestamp = System.currentTimeMillis();
         this.receiveAddress = receiveAddress;
         this.hash = HashUtil.sha256(this.getHeaderString());
-        this.output = new TxOutput(receiveAddress, BLOCK_REWARD);
+    }
+
+    public byte[] getHash() {
+        return this.hash;
+    }
+
+    public byte[] getReceiveAddress() {
+        return this.receiveAddress;
+    }
+
+    public TxOutput getOutput() {
+        return this.output;
     }
 
     private String getHeaderString() {
@@ -34,35 +46,33 @@ public class CoinbaseTransaction implements Serializable {
         );
     }
 
-    @Override
     public String toString() {
-        return this.toStringWithSuffix("\n");
+        return this.toStringWithSuffix(", ");
     }
 
     @Override
     public String toStringWithSuffix(String suffix) {
-        return (
-                "VALUE: " + this.output.toRawStringWithSuffix("") + suffix +
-                "TO: " + ByteUtil.toHexString(this.receiveAddress) + suffix +
-                "HASH: " + ByteUtil.toHexString(this.hash) + suffix
-        );
+        String encoded = "TransactionData {";
+        encoded += "hash=" + ByteUtil.toHexString(this.hash) + suffix;
+        encoded += "timestamp=" + this.timestamp + suffix;
+        encoded += this.output;
+        encoded += "}";
+        return encoded;
     }
 
     @Override
     public String toRawStringWithSuffix(String suffix) {
         return (
-                this.output.toRawStringWithSuffix("") + suffix +
-                ByteUtil.toHexString(this.receiveAddress) + suffix +
+                this.output + suffix +
                 ByteUtil.toHexString(this.hash) + suffix
         );
     }
 
-    @Override
     public JSONObject toJson() {
-        String json = String.format("{timestamp: %s, value: %s, hash: %s, to: %s}",
-                this.timestamp, this.output.toRawStringWithSuffix(""),
+        String json = String.format("{timestamp: %s, hash: %s, output: %s}",
+                this.timestamp,
                 ByteUtil.toHexString(this.hash),
-                ByteUtil.toHexString(this.receiveAddress)
+                this.output.toString()
         );
         return new JSONObject(json);
     }

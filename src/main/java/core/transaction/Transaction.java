@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Transaction implements Serializable {
 
-    private static long MIN_FEE = 1;
+    public static long MIN_FEE = 3;
 
     private long timestamp;
     private byte[] hash;
@@ -21,16 +21,8 @@ public class Transaction implements Serializable {
     private ArrayList<TxInput> inputs;
     private PublicKey publicKey;
 
-    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs) {
-        this.timestamp = System.currentTimeMillis();
-        this.outputs = outputs;
-        this.inputs = inputs;
-    }
-
     // TODO: define more initialization methods (abstract - for client, raw - for incoming transactions, raw - for db init)
-    // TODO: add input validation (not null etc)
     // TODO: add development plan
-    // TODO: unit test components in isolated boundaries !!
     public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature) {
         this.timestamp = System.currentTimeMillis();
         this.publicKey = publicKey;
@@ -46,7 +38,15 @@ public class Transaction implements Serializable {
         this.inputs = inputs;
     }
 
-    public long getValue() {
+    public byte[] getSignature() {
+        return this.signature;
+    }
+
+    public long getInputsValue() {
+        return TxInput.sum(this.inputs);
+    }
+
+    public long getOutputsValue() {
         return TxOutput.sum(this.outputs);
     }
 
@@ -65,7 +65,7 @@ public class Transaction implements Serializable {
 
     public boolean verify() {
         try {
-            return SigUtil.verify(this.publicKey, signature, this.getHeaderString().getBytes());
+            return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
         } catch (Exception e) {
             return false;
         }
@@ -86,14 +86,35 @@ public class Transaction implements Serializable {
             throw new Exception("Transaction inputs null");
         if (this.outputs == null)
             throw new Exception("Transaction outputs null");
+        if (this.signature == null)
+            throw new Exception("Transaction signature missing");
         if (!this.verify())
             throw new Exception("Transaction signature invalid");
         if (TxInput.sum(this.inputs) < TxOutput.sum(this.outputs))
             throw new Exception("Insufficient inputs");
-        if (!(TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) > MIN_FEE))
+        if ((TxInput.sum(this.inputs) - TxOutput.sum(this.outputs)) < MIN_FEE)
             throw new Exception("Insufficient transaction fee");
          // TODO: add custom exceptions
         // TODO: add description: "Output sum larger than input sum"
+    }
+
+    public ArrayList<Exception> getAllExceptions() {
+        ArrayList<Exception> exceptions = new ArrayList<>();
+        if (!(this.timestamp < System.currentTimeMillis()))
+            exceptions.add(new Exception("Timestamp invalid!"));
+        if (this.inputs == null)
+            exceptions.add(new Exception("Transaction inputs null"));
+        if (this.outputs == null)
+            exceptions.add(new Exception("Transaction outputs null"));
+        if (this.signature == null)
+            exceptions.add(new Exception("Transaction signature missing"));
+        if (!this.verify())
+            exceptions.add(new Exception("Transaction signature invalid"));
+        if (TxInput.sum(this.inputs) < TxOutput.sum(this.outputs))
+            exceptions.add(new Exception("Insufficient inputs"));
+        if (!(TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) > MIN_FEE))
+            exceptions.add(new Exception("Insufficient transaction fee"));
+        return exceptions;
     }
 
     private String getHeaderString() {
@@ -111,7 +132,6 @@ public class Transaction implements Serializable {
                 this.inputs.equals(transaction.inputs) &
                 this.outputs.equals(transaction.outputs) &
                 this.verify() == transaction.verify() &
-                // this.timestamp == transaction.timestamp &
                 outputs.equals(transaction.outputs) &
                 inputs.equals(transaction.inputs) &
                 TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) ==
@@ -147,8 +167,8 @@ public class Transaction implements Serializable {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{timestamp: %s, value: %s, hash: %s, signature: %s, from: %s, to: %s}",
-                this.timestamp, TxOutput.sum(this.outputs),
+        String json = String.format("{timestamp: %s, hash: %s, signature: %s, inputs: %s, outputs: %s}",
+                this.timestamp,
                 ByteUtil.toHexString(this.hash),
                 ByteUtil.toHexString(this.signature),
                 this.inputs.toString(),
