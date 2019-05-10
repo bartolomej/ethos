@@ -5,6 +5,7 @@ import util.ByteUtil;
 import util.Serializable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TxInput implements Serializable {
 
@@ -14,8 +15,9 @@ public class TxInput implements Serializable {
     public long value;
 
 
-    public TxInput(byte[] referenceTransaction, long value) { // pass raw values or object references ?
-        this.txid = referenceTransaction;
+    public TxInput(byte[] referenceAddress, int outputIndex, long value) { // pass raw values or object references ?
+        this.txid = referenceAddress;
+        this.outputIndex = outputIndex;
         this.value = value;
     }
 
@@ -31,6 +33,11 @@ public class TxInput implements Serializable {
         return this.outputIndex;
     }
 
+    public boolean equals(TxInput input) {
+        return Arrays.equals(this.txid, input.txid) &
+                this.outputIndex == input.outputIndex & this.value == input.value;
+    }
+
     public static int sum(ArrayList<TxInput> inputs) {
         int sum = 0;
         for (TxInput input : inputs) {
@@ -42,28 +49,44 @@ public class TxInput implements Serializable {
     @Override
     public JSONObject toJson() {
         String json = String.format("{txid: %s, value: %s, output_index: %s}",
-                ByteUtil.toHexString(this.txid), this.value, this.outputIndex
+                (this.txid == null ? "" : ByteUtil.toHexString(this.txid)), this.value, this.outputIndex
         );
         return new JSONObject(json);
     }
 
     @Override
     public String toString() {
-        return this.toRawStringWithSuffix("\n");
+        return this.toStringWithSuffix(", ");
     }
 
     @Override
     public String toStringWithSuffix(String suffix) {
-        return (
-                "TXID: " + ByteUtil.toHexString(this.txid) + suffix +
-                "VALUE: " + this.value + suffix +
-                "OUTPUT_INDEX: " + this.outputIndex
-        );
+        String encoded = "{";
+        encoded += "txid=" + (this.txid == null ? "" : ByteUtil.toHexString(this.txid)) + suffix;
+        encoded += "output_index=" + this.outputIndex + suffix;
+        encoded += "value=" + this.value;
+        encoded += "}";
+        return encoded;
     }
 
     @Override
     public String toRawStringWithSuffix(String suffix) {
-        return (ByteUtil.toHexString(this.txid) + suffix + this.value + suffix + this.outputIndex);
+        return ((this.txid == null ? "" : ByteUtil.toHexString(this.txid)) +
+                suffix + this.value + suffix + this.outputIndex);
+    }
+
+    public static String arrayToString(ArrayList<TxInput> array) {
+        return arrayToStringWithSuffix(array, ", ");
+    }
+
+    // TODO: remove when resolve interface issue
+    public static String arrayToStringWithSuffix(ArrayList<TxInput> array, String suffix) {
+        String out = "[";
+        for (TxInput output : array) {
+            out += output.toStringWithSuffix(", ") + suffix;
+        }
+        out += "]";
+        return out;
     }
 
 }

@@ -5,6 +5,7 @@ import util.ByteUtil;
 import util.Serializable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TxOutput implements Serializable {
 
@@ -22,6 +23,14 @@ public class TxOutput implements Serializable {
 
     public long getValue() {
         return this.value;
+    }
+
+    public boolean valid() {
+        return this.txid != null;
+    }
+
+    public boolean equals(TxOutput output) {
+        return Arrays.equals(this.txid, output.txid) & this.value == output.value;
     }
 
     public static int sum(ArrayList<TxOutput> inputs) {
@@ -42,19 +51,34 @@ public class TxOutput implements Serializable {
 
     @Override
     public String toString() {
-        return this.toRawStringWithSuffix("\n");
+        return this.toStringWithSuffix(", ");
     }
 
     @Override
     public String toStringWithSuffix(String suffix) {
-        return (
-                "TXID: " + ByteUtil.toHexString(this.txid) + suffix +
-                "VALUE: " + this.value
-        );
+        String encoded = "TxOutputData {";
+        encoded += "txid=" + ByteUtil.toHexString(this.txid) + suffix;
+        encoded += "value=" + this.value;
+        encoded += "}";
+        return encoded;
     }
 
     @Override
     public String toRawStringWithSuffix(String suffix) {
         return (ByteUtil.toHexString(this.txid) + suffix + this.value);
+    }
+
+    public static String arrayToString(ArrayList<TxOutput> array) {
+        return arrayToStringWithSuffix(array, ", ");
+    }
+
+    // TODO: remove when resolve interface issue
+    public static String arrayToStringWithSuffix(ArrayList<TxOutput> array, String suffix) {
+        String out = "TxOutputArrayData [";
+        for (TxOutput output : array) {
+            out += output.toStringWithSuffix(", ") + suffix;
+        }
+        out += "]";
+        return out;
     }
 }

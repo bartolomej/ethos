@@ -17,14 +17,12 @@ public class Transaction implements Serializable {
     private long timestamp;
     private byte[] hash;
     private byte[] signature;
-    private byte[] fromAddress;
-    private byte[] receiveAddress;
     private ArrayList<TxOutput> outputs;
     private ArrayList<TxInput> inputs;
-    private boolean verified = false;
+    private PublicKey publicKey;
 
-    public Transaction(byte[] receiveAddress, ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs) {
-        this.receiveAddress = receiveAddress;
+    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs) {
+        this.timestamp = System.currentTimeMillis();
         this.outputs = outputs;
         this.inputs = inputs;
     }
@@ -33,9 +31,17 @@ public class Transaction implements Serializable {
     // TODO: add input validation (not null etc)
     // TODO: add development plan
     // TODO: unit test components in isolated boundaries !!
-    public Transaction(byte[] receiveAddress, ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, byte[] signature) {
-        this.receiveAddress = receiveAddress;
+    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature) {
+        this.timestamp = System.currentTimeMillis();
+        this.publicKey = publicKey;
         this.signature = signature;
+        this.outputs = outputs;
+        this.inputs = inputs;
+    }
+
+    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey) {
+        this.timestamp = System.currentTimeMillis();
+        this.publicKey = publicKey;
         this.outputs = outputs;
         this.inputs = inputs;
     }
@@ -44,18 +50,25 @@ public class Transaction implements Serializable {
         return TxOutput.sum(this.outputs);
     }
 
+    public ArrayList<TxInput> getInputs() {
+        return this.inputs;
+    }
+
+    public ArrayList<TxOutput> getOutputs() {
+        return this.outputs;
+    }
+
     public void sign(PrivateKey privateKey) throws InvalidKeyException {
         this.signature = SigUtil.sign(privateKey, this.getHeaderString().getBytes());
         this.hash = HashUtil.sha256(this.getHeaderString());
     }
 
-    public boolean verify(PublicKey publicKey) {
+    public boolean verify() {
         try {
-            this.verified = SigUtil.verify(publicKey, signature, this.getHeaderString().getBytes());
+            return SigUtil.verify(this.publicKey, signature, this.getHeaderString().getBytes());
         } catch (Exception e) {
             return false;
         }
-        return this.verified;
     }
 
     public boolean valid() {
@@ -63,25 +76,42 @@ public class Transaction implements Serializable {
         boolean ioNotNull = this.inputs != null & this.outputs != null;
         boolean feeValid = (TxInput.sum(this.inputs) - TxOutput.sum(this.outputs)) > MIN_FEE;
         boolean inputsValid = TxInput.sum(this.inputs) > TxOutput.sum(this.outputs);
-        return timestamp & this.verified & ioNotNull & feeValid & inputsValid;
+        return timestamp && this.verify() && ioNotNull && feeValid && inputsValid && this.hash != null;
+    }
+
+    public void validate() throws Exception {
+        if (!(this.timestamp < System.currentTimeMillis()))
+            throw new Exception("Timestamp invalid!");
+        if (this.inputs == null)
+            throw new Exception("Transaction inputs null");
+        if (this.outputs == null)
+            throw new Exception("Transaction outputs null");
+        if (!this.verify())
+            throw new Exception("Transaction signature invalid");
+        if (TxInput.sum(this.inputs) < TxOutput.sum(this.outputs))
+            throw new Exception("Insufficient inputs");
+        if (!(TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) > MIN_FEE))
+            throw new Exception("Insufficient transaction fee");
+         // TODO: add custom exceptions
+        // TODO: add description: "Output sum larger than input sum"
     }
 
     private String getHeaderString() {
         return (
                 this.timestamp +
                 this.outputs.toString() +
-                ByteUtil.toHexString(this.fromAddress) +
-                ByteUtil.toHexString(this.receiveAddress)
+                TxOutput.sum(this.outputs) +
+                TxInput.sum(this.inputs)
         );
     }
 
     public boolean equals(Transaction transaction) {
         return (
                 Arrays.equals(this.signature, transaction.signature) &
-                this.receiveAddress.equals(transaction.receiveAddress) &
-                this.fromAddress.equals(transaction.receiveAddress) &
-                this.verified == transaction.verified &
-                this.timestamp == transaction.timestamp &
+                this.inputs.equals(transaction.inputs) &
+                this.outputs.equals(transaction.outputs) &
+                this.verify() == transaction.verify() &
+                // this.timestamp == transaction.timestamp &
                 outputs.equals(transaction.outputs) &
                 inputs.equals(transaction.inputs) &
                 TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) ==
@@ -90,18 +120,19 @@ public class Transaction implements Serializable {
     }
 
     public String toString() {
-        return this.toStringWithSuffix("\n");
+        return this.toStringWithSuffix(", ");
     }
 
     @Override
     public String toStringWithSuffix(String suffix) {
-        return (
-                "VALUE: " + TxOutput.sum(this.outputs) + suffix +
-                "SIG: " + ByteUtil.toHexString(this.signature) + suffix +
-                "FROM: " + ByteUtil.toHexString(this.fromAddress) + suffix +
-                "TO: " + ByteUtil.toHexString(this.receiveAddress) + suffix +
-                "HASH: " + ByteUtil.toHexString(this.hash) + suffix
-        );
+        String encoded = "TransactionData {";
+        encoded += "hash=" + ByteUtil.toHexString(this.hash) + suffix;
+        encoded += "sig=" + ByteUtil.toHexString(this.signature) + suffix;
+        encoded += "timestamp=" + this.timestamp + suffix;
+        encoded += "inputs=" + TxInput.arrayToStringWithSuffix(this.inputs, " ") + suffix;
+        encoded += "outputs=" + TxOutput.arrayToStringWithSuffix(this.outputs, " ");
+        encoded += "}";
+        return encoded;
     }
 
     @Override
@@ -109,8 +140,8 @@ public class Transaction implements Serializable {
         return (
                 TxOutput.sum(this.outputs) + suffix +
                 ByteUtil.toHexString(this.signature) + suffix +
-                ByteUtil.toHexString(this.fromAddress) + suffix +
-                ByteUtil.toHexString(this.receiveAddress) + suffix +
+                TxInput.arrayToStringWithSuffix(this.inputs, "") + suffix +
+                TxOutput.arrayToStringWithSuffix(this.outputs, "") + suffix +
                 ByteUtil.toHexString(this.hash) + suffix
         );
     }
@@ -120,8 +151,8 @@ public class Transaction implements Serializable {
                 this.timestamp, TxOutput.sum(this.outputs),
                 ByteUtil.toHexString(this.hash),
                 ByteUtil.toHexString(this.signature),
-                ByteUtil.toHexString(this.fromAddress),
-                ByteUtil.toHexString(this.receiveAddress)
+                this.inputs.toString(),
+                this.outputs.toString()
         );
         return new JSONObject(json);
     }

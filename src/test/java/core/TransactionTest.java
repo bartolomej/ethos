@@ -17,49 +17,119 @@ import static org.junit.Assert.*;
 public class TransactionTest {
 
     @Test
-    public void verifyTransactionWithInvalidInputs() {}
+    public void assertTransactionEquality() {
+        Transaction transaction1 = generateTransaction();
 
-    public void verifyTransactionWithInvalidUTXO() {}
+        assertTrue(transaction1.equals(transaction1));
+    }
 
     @Test
-    public void verifyTransaction() {
+    public void generateValidTransaction() {
         KeyUtil keys = KeyUtil.generate();
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
 
-        /* TESTING BOUNDARIES:
-        * This tests span out of transaction class boundaries!
-        * */
-        byte[] toAddress = publicKey.getEncoded();
-        Transaction transaction = null; //new Transaction(toAddress, 100);
+        byte[][] txInputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
+        byte[][] txOutputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
+
+        ArrayList<TxInput> inputs = generateTestInputs(txInputAddresses, new long[]{200, 100});
+        ArrayList<TxOutput> outputs = generateTestOutputs(txOutputAddresses, new long[]{50, 200});
+
+        Transaction transaction = new Transaction(inputs, outputs, publicKey);
         try {
             transaction.sign(privateKey);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         }
-        transaction.verify(publicKey);
-        boolean isValid = transaction.valid();
-        assertTrue(isValid);
+        assertTrue(transaction.valid());
     }
 
     @Test
-    public void toStringTest() {
-        Transaction transaction = this.processTransaction();
-        String stringEncoded = transaction.toString();
-        assertNotNull(stringEncoded);
-    }
-
-    private Transaction processTransaction() {
+    public void generateTransactionWithInvalidInputs() {
         KeyUtil keys = KeyUtil.generate();
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
 
-        // TODO: think about testing boundaries
-        ArrayList<TxInput> inputs = generateTestInputs(null);
-        ArrayList<TxOutput> outputs = generateTestOutputs(null);
-        byte[] toAddress = publicKey.getEncoded();
+        byte[][] txInputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
+        byte[][] txOutputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
 
-        Transaction transaction = new Transaction(toAddress, inputs, outputs);
+        ArrayList<TxInput> inputs = generateTestInputs(txInputAddresses, new long[]{50, 100});
+        ArrayList<TxOutput> outputs = generateTestOutputs(txOutputAddresses, new long[]{100, 200});
+
+        Transaction transaction = new Transaction(inputs, outputs, publicKey);
+        try {
+            transaction.sign(privateKey);
+            transaction.validate();
+            throw new Exception("Test failed");
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            assertEquals(e.getMessage(), "Insufficient inputs");
+        }
+        assertFalse(transaction.valid());
+    }
+
+    @Test
+    public void inputTestGeneratorUtils() {
+        byte[] txAddress1 = new byte[]{0,0,0,0,0,0};
+        byte[] txAddress2 = new byte[]{1,1,1,1,1,1};
+
+        ArrayList<TxInput> inputs = generateTestInputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
+
+        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 0, 50)));
+        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 0, 100)));
+    }
+
+    @Test
+    public void outputTestGenerators() {
+        byte[] txAddress1 = new byte[]{0,0,0,0,0,0};
+        byte[] txAddress2 = new byte[]{1,1,1,1,1,1};
+
+        ArrayList<TxOutput> outputs = generateTestOutputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
+
+        assertTrue(outputs.get(0).equals(new TxOutput(txAddress1, 50)));
+        assertTrue(outputs.get(1).equals(new TxOutput(txAddress2, 100)));
+    }
+
+    @Test
+    public void inputTestGenerators() {
+        byte[] txAddress1 = new byte[]{0,0,0,0,0,0};
+        byte[] txAddress2 = new byte[]{1,1,1,1,1,1};
+
+        ArrayList<TxInput> inputs = generateTestInputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
+
+        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 0, 50)));
+        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 0, 100)));
+    }
+
+    private ArrayList<TxInput> generateTestInputs(byte[][] referenceTransactions, long[] values) {
+        ArrayList<TxInput> inputs = new ArrayList<>();
+        for (int i = 0; i < values.length; i++) {
+            inputs.add(new TxInput(referenceTransactions[i], 0, values[i]));
+        }
+        return inputs;
+    }
+
+    private ArrayList<TxOutput> generateTestOutputs(byte[][] referenceTransactions, long[] values) {
+        ArrayList<TxOutput> outputs = new ArrayList<>();
+        for (int i = 0; i < values.length; i++) {
+            outputs.add(new TxOutput(referenceTransactions[i], values[i]));
+        }
+        return outputs;
+    }
+
+    private Transaction generateTransaction() {
+        KeyUtil keys = KeyUtil.generate();
+        PrivateKey privateKey = keys.getPrivateKey();
+        PublicKey publicKey = keys.getPublicKey();
+
+        byte[][] txInputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
+        byte[][] txOutputAddresses = new byte[][]{new byte[]{0,0,0,0,0,0}, new byte[]{1,1,1,1,1,1}};
+
+        ArrayList<TxInput> inputs = generateTestInputs(txInputAddresses, new long[]{200, 100});
+        ArrayList<TxOutput> outputs = generateTestOutputs(txOutputAddresses, new long[]{50, 200});
+
+        Transaction transaction = new Transaction(inputs, outputs, publicKey);
         try {
             transaction.sign(privateKey);
         } catch (InvalidKeyException e) {
@@ -68,17 +138,4 @@ public class TransactionTest {
         return transaction;
     }
 
-    private ArrayList<TxInput> generateTestInputs(byte[] referenceTransaction) {
-        ArrayList<TxInput> inputs = new ArrayList<>();
-        inputs.add(new TxInput(referenceTransaction, 100));
-        inputs.add(new TxInput(referenceTransaction, 200));
-        return inputs;
-    }
-
-    private ArrayList<TxOutput> generateTestOutputs(byte[] referenceTransaction) {
-        ArrayList<TxOutput> outputs = new ArrayList<>();
-        outputs.add(new TxOutput(referenceTransaction, 100));
-        outputs.add(new TxOutput(referenceTransaction, 200));
-        return outputs;
-    }
 }
