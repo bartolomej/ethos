@@ -28,10 +28,10 @@ public class KeyUtil {
         return this.privateKeyRSA;
     }
 
-    public static PublicKey parsePublicKey(String storedPublic) throws InvalidKeySpecException {
+    public static PublicKey parsePublicKey(byte[] storedPublic) throws InvalidKeySpecException {
         PublicKey publicKey = null;
         try {
-            byte[] data = Base64.getDecoder().decode((storedPublic.getBytes()));
+            byte[] data = Base64.getDecoder().decode((storedPublic));
             X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
             KeyFactory fact = KeyFactory.getInstance("RSA");
             publicKey = fact.generatePublic(spec);
@@ -41,10 +41,10 @@ public class KeyUtil {
         return publicKey;
     }
 
-    public static PrivateKey parsePrivateKey(String storedPrivate) throws InvalidKeySpecException {
+    public static PrivateKey parsePrivateKey(byte[] storedPrivate) throws InvalidKeySpecException {
         PrivateKey privateKey = null;
         try {
-            byte[] data = Base64.getDecoder().decode((storedPrivate.getBytes()));
+            byte[] data = Base64.getDecoder().decode((storedPrivate));
             X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
             KeyFactory fact = KeyFactory.getInstance("RSA");
             privateKey = fact.generatePrivate(spec);

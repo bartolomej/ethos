@@ -4,7 +4,9 @@ import core.transaction.CoinbaseTransaction;
 import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;
+import crypto.HashUtil;
 import crypto.KeyUtil;
+import crypto.SigUtil;
 import org.junit.Test;
 import util.ByteUtil;
 
@@ -16,8 +18,6 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 public class TransactionTest {
-
-    // TODO: resolve signature invalid error on verify
 
     @Test
     public void assertTransactionEquality() {
@@ -53,6 +53,43 @@ public class TransactionTest {
             e.printStackTrace();
         }
         assertTrue(transaction.valid());
+    }
+
+    @Test
+    public void generateValidRawTransaction() throws InvalidKeyException {
+        // first account
+        KeyUtil keys1 = KeyUtil.generate();
+        PrivateKey privateKey1 = keys1.getPrivateKey();
+        PublicKey publicKey1 = keys1.getPublicKey();
+
+        // second account
+        KeyUtil keys2 = KeyUtil.generate();
+        PrivateKey privateKey2 = keys2.getPrivateKey();
+        PublicKey publicKey2 = keys2.getPublicKey();
+
+        byte[] address1 = publicKey1.getEncoded();
+        byte[] address2 = publicKey2.getEncoded();
+
+        // coinbase transaction
+        CoinbaseTransaction coinbaseTx = new CoinbaseTransaction(address1);
+
+        // input-outputs for tx1
+        ArrayList<TxInput> inputsTx1 = new ArrayList<>();
+        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
+        outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
+        outputsTx1.add(new TxOutput(address1, 90 - Transaction.MIN_FEE, 1)); // sending rest back to itself
+
+        // transaction parameters
+        long timestamp = System.currentTimeMillis();
+        String headerString = timestamp + outputsTx1.toString() + inputsTx1.toString() + ByteUtil.toHexString(publicKey1.getEncoded());
+        byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
+        byte[] hash = HashUtil.sha256(headerString + ByteUtil.toHexString(signature));
+
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash, timestamp);
+
+        assertEquals(headerString, tx1.getHeaderString());
+        assertTrue(tx1.valid()); // TODO: shows false but on evaluation shows true
     }
 
     @Test
@@ -98,8 +135,9 @@ public class TransactionTest {
         } catch (Exception e) {
             assertNull(e);
         }
-        assertFalse(transaction.valid());
-        assertTrue((transaction.getInputsValue() - transaction.getOutputsValue()) == Transaction.MIN_FEE);
+
+        assertTrue(transaction.valid());
+        assertEquals((transaction.getInputsValue() - transaction.getOutputsValue()), Transaction.MIN_FEE);
     }
 
     @Test
@@ -132,8 +170,8 @@ public class TransactionTest {
 
         ArrayList<TxInput> inputs = generateTestInputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
 
-        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 0, 50)));
-        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 0, 100)));
+        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 50, 0)));
+        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 100, 0)));
     }
 
     @Test
@@ -143,8 +181,8 @@ public class TransactionTest {
 
         ArrayList<TxOutput> outputs = generateTestOutputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
 
-        assertTrue(outputs.get(0).equals(new TxOutput(txAddress1, 50)));
-        assertTrue(outputs.get(1).equals(new TxOutput(txAddress2, 100)));
+        assertTrue(outputs.get(0).equals(new TxOutput(txAddress1, 50, 0)));
+        assertTrue(outputs.get(1).equals(new TxOutput(txAddress2, 100, 1)));
     }
 
     @Test
@@ -154,14 +192,14 @@ public class TransactionTest {
 
         ArrayList<TxInput> inputs = generateTestInputs(new byte[][]{txAddress1, txAddress2}, new long[]{50, 100});
 
-        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 0, 50)));
-        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 0, 100)));
+        assertTrue(inputs.get(0).equals(new TxInput(txAddress1, 50, 0)));
+        assertTrue(inputs.get(1).equals(new TxInput(txAddress2, 100, 0)));
     }
 
     private ArrayList<TxInput> generateTestInputs(byte[][] referenceTransactions, long[] values) {
         ArrayList<TxInput> inputs = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
-            inputs.add(new TxInput(referenceTransactions[i], 0, values[i]));
+            inputs.add(new TxInput(referenceTransactions[i], values[i], 0));
         }
         return inputs;
     }
@@ -169,7 +207,7 @@ public class TransactionTest {
     private ArrayList<TxOutput> generateTestOutputs(byte[][] referenceTransactions, long[] values) {
         ArrayList<TxOutput> outputs = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
-            outputs.add(new TxOutput(referenceTransactions[i], values[i]));
+            outputs.add(new TxOutput(referenceTransactions[i], values[i], i));
         }
         return outputs;
     }

@@ -22,11 +22,12 @@ public class Block {
     // BODY
     private int difficulty;
     private int index;
-    private String miner;
-    public byte[] hash;
+    private byte[] miner;
+    private byte[] hash;
     private ArrayList<Transaction> transactions;
 
     public Block(int index, int difficulty, Block previousBlock) {
+        transactions = new ArrayList<>();
         this.previousBlock = previousBlock;
         this.index = index;
         this.difficulty = difficulty;
@@ -37,43 +38,54 @@ public class Block {
         return ByteUtil.toHexString(this.hash);
     }
 
+    public byte[] getMiner() {
+        return this.miner;
+    }
+
     public boolean valid(byte[] prevBlockHash) {
-        if (getStringHash().length() < 32) return false;
-        boolean time = this.timestamp < System.currentTimeMillis();
-        boolean prevHashMatches = Arrays.equals(this.previousBlock.hash, prevBlockHash);
-        boolean hashValid = this.getStringHash().substring(0, this.difficulty)
-                .equals(StringUtil.repeat("0", this.difficulty));
-        return time & prevHashMatches & hashValid;
+        return this.validTimestamp() & this.prevHashMatches(prevBlockHash) & this.validHash();
         // TODO: transaction verification (merkle root)
+        // TODO: hash byte length verification
     }
 
     public boolean valid() {
+        if (this.hash == null) return false;
         boolean time = this.timestamp < System.currentTimeMillis();
         boolean prevHashMatches = this.previousBlock != null;
-        boolean hashValid = this.getStringHash().substring(0, this.difficulty)
+        boolean validHash = this.getStringHash().substring(0, this.difficulty)
                 .equals(StringUtil.repeat("0", this.difficulty));
-        return time & prevHashMatches & hashValid;
+        return time & prevHashMatches & validHash;
     }
 
-    public void addTransaction(Transaction transaction) {
-        if (!transaction.valid()) return;
+    private boolean validTimestamp() {
+        return this.timestamp < System.currentTimeMillis();
+    }
+
+    private boolean validHash() {
+        return this.getStringHash().substring(0, this.difficulty)
+                .equals(StringUtil.repeat("0", this.difficulty));
+    }
+
+    private boolean prevHashMatches(byte[] prevBlockHash) {
+        return Arrays.equals(this.previousBlock.hash, prevBlockHash);
+    }
+
+    public void addTransaction(Transaction transaction) throws TransactionException {
+        transaction.validate();
         this.transactions.add(transaction);
     }
 
-    public void addTransacctions(List<Transaction> transactions) {
+    public void addTransactions(List<Transaction> transactions) {
         for (Transaction transaction : transactions) {
             if (!transaction.valid()) return;
         }
         this.transactions.addAll(transactions);
     }
 
-    public void incrementNonce() {
-        this.nonce++;
-    }
-
     public void computeHash() {
         this.timestamp = System.currentTimeMillis();
         this.hash = HashUtil.sha256(getHeaderString() + this.nonce);
+        this.nonce++;
     }
 
     private String getHeaderString() {
@@ -89,16 +101,16 @@ public class Block {
     }
 
     private String toStringHeaderWithSuffix(String suffix) {
-        return (
-                "DIFFICULTY: " + this.difficulty + suffix +
-                "SEQ_NUMBER: " + this.index + suffix +
-                "TIMESTAMP: " + this.timestamp + suffix +
-                "MINER_ADDRESS: " + this.miner + suffix +
-                "PREV_BLOCK_HASH: " + (
-                        this.previousBlock == null ? "" : this.previousBlock.getStringHash()
-                ) + suffix +
-                "CURRENT_BLOCK_HASH: " + this.getStringHash() + suffix +
-                "TRANSACTION_ROOT: " + ByteUtil.toHexString(this.transactionsRootHash) + suffix
-        );
+        String encoded = "";
+        encoded += "BlockData {";
+        encoded += "difficulty=" + this.difficulty + suffix;
+        encoded += "index=" + this.index + suffix;
+        encoded += "timestamp=" + this.timestamp + suffix;
+        encoded += "miner=" + (this.miner == null ? "null" : ByteUtil.toHexString(this.miner)) + suffix;
+        encoded += "prev_block=" + this.previousBlock.getStringHash() + suffix;
+        encoded += "hash=" + this.getStringHash() + suffix;
+        encoded += "transaction_root=" + ByteUtil.toHexString(this.transactionsRootHash) + suffix;
+        encoded += "}";
+        return encoded;
     }
 }

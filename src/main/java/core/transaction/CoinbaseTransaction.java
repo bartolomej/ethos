@@ -20,7 +20,7 @@ public class CoinbaseTransaction implements Serializable {
     private TxOutput output;
 
     public CoinbaseTransaction(byte[] receiveAddress) {
-        this.output = new TxOutput(receiveAddress, BLOCK_REWARD);
+        this.output = new TxOutput(receiveAddress, BLOCK_REWARD, 0);
         this.timestamp = System.currentTimeMillis();
         this.receiveAddress = receiveAddress;
         this.hash = HashUtil.sha256(this.getHeaderString());

@@ -13,8 +13,8 @@ public class ArrayUtilTest {
     @Test
     public void toStringWithSuffix() {
         ArrayList<TxOutput> outputs = new ArrayList<>();
-        outputs.add(new TxOutput(new byte[]{0,0,0,0}, 100));
-        outputs.add(new TxOutput(new byte[]{0,0,0,0}, 200));
+        outputs.add(new TxOutput(new byte[]{0,0,0,0}, 100, 0));
+        outputs.add(new TxOutput(new byte[]{0,0,0,0}, 200, 1));
 
         // TODO: toString() doesn't work with interface
         // String stringOutput = ArrayUtil.toStringWithSuffix(outputs, "");

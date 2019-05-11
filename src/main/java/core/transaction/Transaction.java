@@ -1,5 +1,6 @@
 package core.transaction;
 
+import core.TransactionException;
 import crypto.*;
 import org.json.JSONObject;
 import util.ArrayUtil;
@@ -7,6 +8,7 @@ import util.ByteUtil;
 import util.Serializable;
 
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,8 +23,28 @@ public class Transaction implements Serializable {
     private ArrayList<TxInput> inputs;
     private PublicKey publicKey;
 
-    // TODO: define more initialization methods (abstract - for client, raw - for incoming transactions, raw - for db init)
-    // TODO: add development plan
+
+    public Transaction(ArrayList<TxInput> inputs,
+                       ArrayList<TxOutput> outputs,
+                       byte[] publicKey, byte[] signature,
+                       byte[] hash, long timestamp) throws InvalidKeySpecException {
+        this.timestamp = timestamp;
+        this.publicKey = KeyUtil.parsePublicKey(publicKey);
+        this.signature = signature;
+        this.outputs = outputs;
+        this.inputs = inputs;
+        this.hash = hash;
+    }
+
+    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature, byte[] hash, long timestamp) {
+        this.timestamp = timestamp;
+        this.publicKey = publicKey;
+        this.signature = signature;
+        this.outputs = outputs;
+        this.inputs = inputs;
+        this.hash = hash;
+    }
+
     public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature) {
         this.timestamp = System.currentTimeMillis();
         this.publicKey = publicKey;
@@ -63,7 +85,13 @@ public class Transaction implements Serializable {
         this.hash = HashUtil.sha256(this.getHeaderString());
     }
 
-    public boolean verify() {
+    public void sign(byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException {
+        PrivateKey privateKey1 = KeyUtil.parsePrivateKey(privateKey);
+        this.signature = SigUtil.sign(privateKey1, this.getHeaderString().getBytes());
+        this.hash = HashUtil.sha256(this.getHeaderString());
+    }
+
+    public boolean isSigValid() {
         try {
             return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
         } catch (Exception e) {
@@ -71,58 +99,74 @@ public class Transaction implements Serializable {
         }
     }
 
+    public boolean verify() throws SignatureException, InvalidKeyException {
+        return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
+    }
+
     public boolean valid() {
-        boolean timestamp = this.timestamp < System.currentTimeMillis();
-        boolean ioNotNull = this.inputs != null & this.outputs != null;
-        boolean feeValid = (TxInput.sum(this.inputs) - TxOutput.sum(this.outputs)) > MIN_FEE;
-        boolean inputsValid = TxInput.sum(this.inputs) > TxOutput.sum(this.outputs);
-        return timestamp && this.verify() && ioNotNull && feeValid && inputsValid && this.hash != null;
+        return (
+                this.validTimestamp() &&
+                this.inputs != null && this.outputs != null && this.hash != null &&
+                this.isSigValid() &&
+                this.sufficientInputs() &&
+                this.validFee()
+        );
     }
 
-    public void validate() throws Exception {
-        if (!(this.timestamp < System.currentTimeMillis()))
-            throw new Exception("Timestamp invalid!");
+    public void validate() throws TransactionException {
+        if (!this.validTimestamp())
+            throw new TransactionException("Timestamp invalid");
         if (this.inputs == null)
-            throw new Exception("Transaction inputs null");
+            throw new TransactionException("Transaction inputs null");
         if (this.outputs == null)
-            throw new Exception("Transaction outputs null");
+            throw new TransactionException("Transaction outputs null");
         if (this.signature == null)
-            throw new Exception("Transaction signature missing");
-        if (!this.verify())
-            throw new Exception("Transaction signature invalid");
-        if (TxInput.sum(this.inputs) < TxOutput.sum(this.outputs))
-            throw new Exception("Insufficient inputs");
-        if ((TxInput.sum(this.inputs) - TxOutput.sum(this.outputs)) < MIN_FEE)
-            throw new Exception("Insufficient transaction fee");
-         // TODO: add custom exceptions
-        // TODO: add description: "Output sum larger than input sum"
+            throw new TransactionException("Transaction signature missing");
+        if (!this.isSigValid())
+            throw new TransactionException("Transaction signature invalid");
+        if (!this.sufficientInputs())
+            throw new TransactionException("Insufficient inputs", this.getInputsOutputsMessage());
+        if (!this.validFee())
+            throw new TransactionException("Insufficient transaction fee");
     }
 
-    public ArrayList<Exception> getAllExceptions() {
-        ArrayList<Exception> exceptions = new ArrayList<>();
-        if (!(this.timestamp < System.currentTimeMillis()))
-            exceptions.add(new Exception("Timestamp invalid!"));
+    public ArrayList<TransactionException> getAllExceptions() {
+        ArrayList<TransactionException> exceptions = new ArrayList<>();
+        if (!this.validTimestamp())
+            exceptions.add(new TransactionException("Timestamp invalid"));
         if (this.inputs == null)
-            exceptions.add(new Exception("Transaction inputs null"));
+            exceptions.add(new TransactionException("Transaction inputs null"));
         if (this.outputs == null)
-            exceptions.add(new Exception("Transaction outputs null"));
+            exceptions.add(new TransactionException("Transaction outputs null"));
         if (this.signature == null)
-            exceptions.add(new Exception("Transaction signature missing"));
-        if (!this.verify())
-            exceptions.add(new Exception("Transaction signature invalid"));
-        if (TxInput.sum(this.inputs) < TxOutput.sum(this.outputs))
-            exceptions.add(new Exception("Insufficient inputs"));
-        if (!(TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) > MIN_FEE))
-            exceptions.add(new Exception("Insufficient transaction fee"));
+            exceptions.add(new TransactionException("Transaction signature missing"));
+        if (!this.isSigValid())
+            exceptions.add(new TransactionException("Transaction signature invalid"));
+        if (!this.sufficientInputs())
+            exceptions.add(new TransactionException("Insufficient inputs", this.getInputsOutputsMessage()));
+        if (!this.validFee())
+            exceptions.add(new TransactionException("Insufficient transaction fee"));
         return exceptions;
     }
 
-    private String getHeaderString() {
+    public boolean validTimestamp() {
+        return (this.timestamp < System.currentTimeMillis());
+    }
+
+    public boolean validFee() {
+        return (TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) >= MIN_FEE);
+    }
+
+    public boolean sufficientInputs() {
+        return TxInput.sum(this.inputs) >= TxOutput.sum(this.outputs);
+    }
+
+    public String getHeaderString() {
         return (
                 this.timestamp +
                 this.outputs.toString() +
-                TxOutput.sum(this.outputs) +
-                TxInput.sum(this.inputs)
+                this.inputs.toString() +
+                ByteUtil.toHexString(publicKey.getEncoded())
         );
     }
 
@@ -131,12 +175,16 @@ public class Transaction implements Serializable {
                 Arrays.equals(this.signature, transaction.signature) &
                 this.inputs.equals(transaction.inputs) &
                 this.outputs.equals(transaction.outputs) &
-                this.verify() == transaction.verify() &
+                this.isSigValid() == transaction.isSigValid() &
                 outputs.equals(transaction.outputs) &
                 inputs.equals(transaction.inputs) &
                 TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) ==
                         TxInput.sum(transaction.inputs) - TxOutput.sum(transaction.outputs)
         );
+    }
+
+    private String getInputsOutputsMessage() {
+        return "inputs=" + this.inputs.toString() + ", outputs=" + this.outputs;
     }
 
     public String toString() {

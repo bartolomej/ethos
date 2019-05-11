@@ -11,14 +11,20 @@ public class TxOutput implements Serializable {
 
     private byte[] txid;
     private long value;
+    private int outputIndex;
 
-    public TxOutput(byte[] receiveAddress, long value) {
+    public TxOutput(byte[] receiveAddress, long value, int outputIndex) {
         this.txid = receiveAddress;
+        this.outputIndex = outputIndex;
         this.value = value;
     }
 
     public byte[] getTxid() {
         return this.txid;
+    }
+
+    public int getOutputIndex() {
+        return this.outputIndex;
     }
 
     public long getValue() {
@@ -33,7 +39,7 @@ public class TxOutput implements Serializable {
         return Arrays.equals(this.txid, output.txid) & this.value == output.value;
     }
 
-    public static int sum(ArrayList<TxOutput> inputs) {
+    public static long sum(ArrayList<TxOutput> inputs) {
         int sum = 0;
         for (TxOutput input : inputs) {
             sum += input.value;

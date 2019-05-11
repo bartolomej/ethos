@@ -15,10 +15,17 @@ public class TxInput implements Serializable {
     public long value;
 
 
-    public TxInput(byte[] referenceAddress, int outputIndex, long value) { // pass raw values or object references ?
+    public TxInput(byte[] referenceAddress, long value, int outputIndex) { // pass raw values or object references ?
         this.txid = referenceAddress;
         this.outputIndex = outputIndex;
         this.value = value;
+    }
+
+    // constructor that accepts prev output
+    public TxInput(TxOutput prevOutput) {
+        this.txid = prevOutput.getTxid();
+        this.outputIndex = prevOutput.getOutputIndex();
+        this.value = prevOutput.getValue();
     }
 
     public byte[] getTxid() {
@@ -61,7 +68,7 @@ public class TxInput implements Serializable {
 
     @Override
     public String toStringWithSuffix(String suffix) {
-        String encoded = "{";
+        String encoded = "TxInputData {";
         encoded += "txid=" + (this.txid == null ? "" : ByteUtil.toHexString(this.txid)) + suffix;
         encoded += "output_index=" + this.outputIndex + suffix;
         encoded += "value=" + this.value;
