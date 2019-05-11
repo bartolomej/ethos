@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -17,7 +18,7 @@ import static org.junit.Assert.*;
 public class TransactionChainingTest {
 
     @Test
-    public void generateValidTransactionWithMultipleOutputs() {
+    public void generateValidTransactionWithMultipleOutputs() throws InvalidKeySpecException, InvalidKeyException {
         // first account
         KeyUtil keys1 = KeyUtil.generate();
         PrivateKey privateKey1 = keys1.getPrivateKey();
@@ -32,7 +33,7 @@ public class TransactionChainingTest {
         byte[] address2 = publicKey2.getEncoded();
 
         // coinbase transaction
-        CoinbaseTransaction coinbaseTx = new CoinbaseTransaction(address1);
+        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(address1);
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
@@ -53,10 +54,7 @@ public class TransactionChainingTest {
     }
 
     @Test
-    public void generateChainWithCoinbaseTransaction() {
-        byte[] address1 = new byte[]{0,0,0,0,0,0,0,0,0};
-        byte[] address2 = new byte[]{1,1,1,1,1,1,1,1,1};
-
+    public void generateChainWithCoinbaseTransaction() throws InvalidKeySpecException, InvalidKeyException {
         // first account
         KeyUtil keys1 = KeyUtil.generate();
         PrivateKey privateKey1 = keys1.getPrivateKey();
@@ -67,8 +65,11 @@ public class TransactionChainingTest {
         PrivateKey privateKey2 = keys2.getPrivateKey();
         PublicKey publicKey2 = keys2.getPublicKey();
 
+        byte[] address1 = publicKey1.getEncoded();
+        byte[] address2 = publicKey2.getEncoded();
+
         // coinbase transaction
-        CoinbaseTransaction coinbaseTx = new CoinbaseTransaction(address1);
+        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(address1);
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();

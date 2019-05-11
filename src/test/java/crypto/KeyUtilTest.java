@@ -2,34 +2,24 @@ package crypto;
 
 import org.junit.Test;
 
+import static org.junit.Assert.*;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 public class KeyUtilTest {
 
     @Test
-    public void generate() {
+    public void generateAndParse() throws InvalidKeySpecException {
         KeyUtil keys = KeyUtil.generate();
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
-        // TODO: test deterministically
-        //assertEquals(1216, ByteUtil.toHexString(privateKey.getEncoded()).length());
-        //assertEquals(1216, ByteUtil.toHexString(publicKey.getEncoded()).length());
+
+        PrivateKey decodedPrivate = KeyUtil.parsePrivateKey(privateKey.getEncoded());
+        PublicKey decodedPublic = KeyUtil.parsePublicKey(publicKey.getEncoded());
+
+        assertArrayEquals(decodedPrivate.getEncoded(), privateKey.getEncoded());
+        assertArrayEquals(decodedPublic.getEncoded(), publicKey.getEncoded());
     }
 
-    @Test
-    public void parsePublicKey() {
-    }
-
-    @Test
-    public void parsePrivateKey() {
-    }
-
-    @Test
-    public void generateRSAKeys() {
-    }
-
-    @Test
-    public void generateECCKeys() {
-    }
 }

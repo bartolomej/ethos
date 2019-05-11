@@ -60,6 +60,10 @@ public class Transaction implements Serializable {
         this.inputs = inputs;
     }
 
+    public byte[] getHash() {
+        return this.hash;
+    }
+
     public byte[] getSignature() {
         return this.signature;
     }
@@ -82,13 +86,13 @@ public class Transaction implements Serializable {
 
     public void sign(PrivateKey privateKey) throws InvalidKeyException {
         this.signature = SigUtil.sign(privateKey, this.getHeaderString().getBytes());
-        this.hash = HashUtil.sha256(this.getHeaderString());
+        this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
     public void sign(byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException {
         PrivateKey privateKey1 = KeyUtil.parsePrivateKey(privateKey);
         this.signature = SigUtil.sign(privateKey1, this.getHeaderString().getBytes());
-        this.hash = HashUtil.sha256(this.getHeaderString());
+        this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
     public boolean isSigValid() {

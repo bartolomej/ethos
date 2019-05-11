@@ -13,6 +13,7 @@ import util.ByteUtil;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -27,11 +28,14 @@ public class TransactionTest {
     }
 
     @Test
-    public void generateValidCoinbaseTransaction() {
-        byte[] toAddress = new byte[]{0,0,0,0,0,0,0};
-        CoinbaseTransaction coinbase = new CoinbaseTransaction(toAddress);
+    public void generateValidCoinbaseTransaction() throws InvalidKeyException, InvalidKeySpecException{
+        KeyUtil keys = KeyUtil.generate();
+        PrivateKey privateKey = keys.getPrivateKey();
+        PublicKey publicKey = keys.getPublicKey();
 
-        assertEquals(coinbase.getReceiveAddress(), toAddress);
+        CoinbaseTransaction coinbase = CoinbaseTransaction.generate(publicKey.getEncoded());
+
+        assertArrayEquals(coinbase.getOutput().getTxid(), publicKey.getEncoded());
     }
 
     @Test
@@ -56,7 +60,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void generateValidRawTransaction() throws InvalidKeyException {
+    public void generateValidRawTransaction() throws InvalidKeyException, InvalidKeySpecException {
         // first account
         KeyUtil keys1 = KeyUtil.generate();
         PrivateKey privateKey1 = keys1.getPrivateKey();
@@ -71,7 +75,7 @@ public class TransactionTest {
         byte[] address2 = publicKey2.getEncoded();
 
         // coinbase transaction
-        CoinbaseTransaction coinbaseTx = new CoinbaseTransaction(address1);
+        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(address1);
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
@@ -84,7 +88,7 @@ public class TransactionTest {
         long timestamp = System.currentTimeMillis();
         String headerString = timestamp + outputsTx1.toString() + inputsTx1.toString() + ByteUtil.toHexString(publicKey1.getEncoded());
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
-        byte[] hash = HashUtil.sha256(headerString + ByteUtil.toHexString(signature));
+        byte[] hash = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
         Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash, timestamp);
 

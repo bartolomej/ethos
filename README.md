@@ -1,4 +1,3 @@
-##ETHOS 
 Ethos is a simple experimental decentralized ledger protocol implementation for home school project.
 
 TARGET FEATURES:

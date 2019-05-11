@@ -4,6 +4,7 @@ import javax.crypto.Cipher;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -31,10 +32,8 @@ public class KeyUtil {
     public static PublicKey parsePublicKey(byte[] storedPublic) throws InvalidKeySpecException {
         PublicKey publicKey = null;
         try {
-            byte[] data = Base64.getDecoder().decode((storedPublic));
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
-            KeyFactory fact = KeyFactory.getInstance("RSA");
-            publicKey = fact.generatePublic(spec);
+            publicKey = KeyFactory.getInstance("RSA")
+                    .generatePublic(new X509EncodedKeySpec(storedPublic));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -44,10 +43,8 @@ public class KeyUtil {
     public static PrivateKey parsePrivateKey(byte[] storedPrivate) throws InvalidKeySpecException {
         PrivateKey privateKey = null;
         try {
-            byte[] data = Base64.getDecoder().decode((storedPrivate));
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
-            KeyFactory fact = KeyFactory.getInstance("RSA");
-            privateKey = fact.generatePrivate(spec);
+            privateKey = KeyFactory.getInstance("RSA")
+                    .generatePrivate(new PKCS8EncodedKeySpec(storedPrivate));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -56,7 +53,7 @@ public class KeyUtil {
 
     public void generateRSAKeys() {
         try {
-            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DSA");
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
             keyPairGen.initialize(2048);
             KeyPair pair = keyPairGen.generateKeyPair();
             this.privateKeyRSA = pair.getPrivate();
