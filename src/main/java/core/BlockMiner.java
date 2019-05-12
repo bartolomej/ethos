@@ -6,18 +6,6 @@ public class BlockMiner {
     // TODO: method for starting next best block from pool
     // TODO: add task queue
 
-    /*
-    BLOCK HASH PARAMS:
-    -> version
-    -> Previous block hash(“prev_block”)
-    -> merkle root
-    -> timestamp
-    -> difficulty bits
-    -> nonce
-     */
-
-    public int DIFFICULTY = 5;
-
     public void startMining() {
 
     };
@@ -26,5 +14,4 @@ public class BlockMiner {
 
     public void mineNextBlock() {};
 
-    //private Block getBlock() {};
 }

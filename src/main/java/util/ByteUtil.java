@@ -23,4 +23,11 @@ public class ByteUtil {
         }
         return bytes;
     }
+
+    public static boolean arraysEqual(byte[] array1, byte[] array2) {
+        for (int i = 0; i < array1.length; i++) {
+            if (array1[i] != array1[i]) return false;
+        }
+        return true;
+    }
 }

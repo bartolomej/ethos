@@ -2,8 +2,7 @@ package core;
 
 import core.transaction.CoinbaseTransaction;
 import core.transaction.Transaction;
-import core.transaction.TxInput;
-import core.transaction.TxOutput;
+import core.transaction.*;
 import crypto.HashUtil;
 import crypto.KeyUtil;
 import crypto.SigUtil;

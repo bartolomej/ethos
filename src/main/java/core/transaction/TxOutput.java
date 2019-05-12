@@ -1,5 +1,7 @@
 package core.transaction;
 
+import com.google.gson.JsonArray;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
 import util.Serializable;
@@ -11,11 +13,16 @@ public class TxOutput implements Serializable {
 
     private byte[] txid;
     private long value;
-    private int outputIndex;
+    private int outputIndex; // TODO: not for use
 
     public TxOutput(byte[] receiveAddress, long value, int outputIndex) {
         this.txid = receiveAddress;
         this.outputIndex = outputIndex;
+        this.value = value;
+    }
+
+    public TxOutput(byte[] receiveAddress, long value) {
+        this.txid = receiveAddress;
         this.value = value;
     }
 
@@ -45,6 +52,14 @@ public class TxOutput implements Serializable {
             sum += input.value;
         }
         return sum;
+    }
+
+    public static JSONArray arrayToJson(ArrayList<TxOutput> outputs) {
+        JSONArray jsonArray = new JSONArray();
+        for (TxOutput output : outputs) {
+            jsonArray.put(output.toJson().toString());
+        }
+        return jsonArray;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package core.transaction;
 
+import com.google.gson.JsonArray;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
 import util.Serializable;
@@ -53,7 +55,14 @@ public class TxInput implements Serializable {
         return sum;
     }
 
-    @Override
+    public static JSONArray arrayToJson(ArrayList<TxInput> inputs) {
+        JSONArray jsonArray = new JSONArray();
+        for (TxInput input : inputs) {
+            jsonArray.put(input.toJson().toString());
+        }
+        return jsonArray;
+    }
+
     public JSONObject toJson() {
         String json = String.format("{txid: %s, value: %s, output_index: %s}",
                 (this.txid == null ? "" : ByteUtil.toHexString(this.txid)), this.value, this.outputIndex
@@ -61,12 +70,10 @@ public class TxInput implements Serializable {
         return new JSONObject(json);
     }
 
-    @Override
     public String toString() {
         return this.toStringWithSuffix(", ");
     }
 
-    @Override
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxInputData {";
         encoded += "txid=" + (this.txid == null ? "" : ByteUtil.toHexString(this.txid)) + suffix;
@@ -76,7 +83,6 @@ public class TxInput implements Serializable {
         return encoded;
     }
 
-    @Override
     public String toRawStringWithSuffix(String suffix) {
         return ((this.txid == null ? "" : ByteUtil.toHexString(this.txid)) +
                 suffix + this.value + suffix + this.outputIndex);

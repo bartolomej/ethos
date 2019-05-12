@@ -60,6 +60,10 @@ public class Transaction implements Serializable {
         this.inputs = inputs;
     }
 
+    public long getTimestamp() {
+        return this.timestamp;
+    }
+
     public byte[] getHash() {
         return this.hash;
     }
@@ -223,8 +227,8 @@ public class Transaction implements Serializable {
                 this.timestamp,
                 ByteUtil.toHexString(this.hash),
                 ByteUtil.toHexString(this.signature),
-                this.inputs.toString(),
-                this.outputs.toString()
+                TxInput.arrayToJson(this.inputs),
+                TxOutput.arrayToJson(this.outputs)
         );
         return new JSONObject(json);
     }

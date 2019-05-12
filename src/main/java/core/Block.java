@@ -69,6 +69,10 @@ public class Block {
         return this.miner;
     }
 
+    public boolean isParentOf(Block block) {
+        return ByteUtil.arraysEqual(block.getHash(), this.previousBlockHash);
+    }
+
     public boolean valid(byte[] prevBlockHash) {
         return this.validTimestamp() & this.prevHashMatches(prevBlockHash) & this.validHash();
         // TODO: transaction verification (merkle root)
