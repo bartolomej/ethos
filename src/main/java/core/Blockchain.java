@@ -2,5 +2,11 @@ package core;
 
 public class Blockchain {
 
-    // blockchain factory
+    public static void mineBlock(Block block) {
+
+    }
+
+    public static Block getBestBlock() {
+        return null;
+    }
 }

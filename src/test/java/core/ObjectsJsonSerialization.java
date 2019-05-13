@@ -1,8 +1,6 @@
 package core;
 
-import com.google.gson.JsonArray;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.*;
 import org.junit.Test;
 import core.transaction.*;
 import util.ByteUtil;
@@ -70,6 +68,7 @@ public class ObjectsJsonSerialization {
         expected.put("signature", ByteUtil.toHexString(tx.getSignature()));
         expected.put("hash", ByteUtil.toHexString(tx.getHash()));
         expected.put("timestamp", tx.getTimestamp());
+        expected.put("pub_key", ByteUtil.toHexString(tx.getPublicKey().getEncoded()));
 
         assertEquals(tx.toJson().toString(), expected.toString());
     };
@@ -88,7 +87,7 @@ public class ObjectsJsonSerialization {
         int index = 0;
 
         for (int i = 0; i < length; i++) {
-            jsonArray.put(new TxInput(toAddress, value, index).toJson().toString());
+            jsonArray.put(new TxInput(toAddress, value, index).toJson());
         }
         return jsonArray;
     }
@@ -114,7 +113,7 @@ public class ObjectsJsonSerialization {
         int index = 0;
 
         for (int i = 0; i < length; i++) {
-            jsonArray.put(new TxOutput(toAddress, value, index).toJson().toString());
+            jsonArray.put(new TxOutput(toAddress, value, index).toJson());
         }
         return jsonArray;
     }

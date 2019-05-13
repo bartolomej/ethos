@@ -2,7 +2,7 @@ package core.transaction;
 
 import core.TransactionException;
 import crypto.*;
-import org.json.JSONObject;
+import org.json.*;
 import util.ArrayUtil;
 import util.ByteUtil;
 import util.Serializable;
@@ -66,6 +66,10 @@ public class Transaction implements Serializable {
 
     public byte[] getHash() {
         return this.hash;
+    }
+
+    public PublicKey getPublicKey() {
+        return this.publicKey;
     }
 
     public byte[] getSignature() {
@@ -181,14 +185,47 @@ public class Transaction implements Serializable {
     public boolean equals(Transaction transaction) {
         return (
                 Arrays.equals(this.signature, transaction.signature) &
-                this.inputs.equals(transaction.inputs) &
-                this.outputs.equals(transaction.outputs) &
+                this.inputsEquals(transaction.inputs) &
+                this.outputsEquals(transaction.outputs) &
                 this.isSigValid() == transaction.isSigValid() &
-                outputs.equals(transaction.outputs) &
-                inputs.equals(transaction.inputs) &
-                TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) ==
-                        TxInput.sum(transaction.inputs) - TxOutput.sum(transaction.outputs)
+                TxInput.sum(this.inputs) == TxInput.sum(transaction.inputs) &&
+                TxOutput.sum(this.outputs) == TxOutput.sum(transaction.outputs)
         );
+    }
+
+    public ArrayList<Exception> equalsWithException(Transaction transaction) throws Exception {
+        ArrayList<Exception> arrayList = new ArrayList<>();
+        if (!Arrays.equals(this.signature, transaction.signature))
+            arrayList.add(new Exception("Signatures don't match"));
+        if (!this.inputsEquals(transaction.inputs))
+            arrayList.add(new Exception("Inputs don't match"));
+        if (!this.outputsEquals(transaction.outputs))
+            arrayList.add(new Exception("Outputs don't match"));
+        if (!this.isSigValid() == transaction.isSigValid())
+            arrayList.add(new Exception("Signature not valid"));
+        if (!(TxInput.sum(this.inputs) == TxInput.sum(transaction.inputs)))
+            arrayList.add(new Exception("Inputs sum don't match"));
+        if (!(TxOutput.sum(this.outputs) == TxOutput.sum(transaction.outputs)))
+            arrayList.add(new Exception("Outputs sum don't match"));
+        return arrayList;
+    }
+
+    private boolean inputsEquals(ArrayList<TxInput> inputs1) {
+        if (this.inputs.size() != inputs1.size()) return false;
+        for (int i = 0; i < this.inputs.size(); i++) {
+            if (!this.inputs.get(i).equals(inputs1.get(i)))
+                return false;
+        }
+        return true;
+    }
+
+    private boolean outputsEquals(ArrayList<TxOutput> outputs1) {
+        if (this.outputs.size() != outputs1.size()) return false;
+        for (int i = 0; i < this.outputs.size(); i++) {
+            if (!this.outputs.get(i).equals(outputs1.get(i)))
+                return false;
+        }
+        return true;
     }
 
     private String getInputsOutputsMessage() {
@@ -223,9 +260,10 @@ public class Transaction implements Serializable {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{timestamp: %s, hash: %s, signature: %s, inputs: %s, outputs: %s}",
+        String json = String.format("{timestamp: %s, hash: %s, pub_key: %s, signature: %s, inputs: %s, outputs: %s}",
                 this.timestamp,
                 ByteUtil.toHexString(this.hash),
+                ByteUtil.toHexString(this.publicKey.getEncoded()),
                 ByteUtil.toHexString(this.signature),
                 TxInput.arrayToJson(this.inputs),
                 TxOutput.arrayToJson(this.outputs)

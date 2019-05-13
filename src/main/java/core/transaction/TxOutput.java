@@ -1,6 +1,5 @@
 package core.transaction;
 
-import com.google.gson.JsonArray;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
@@ -57,7 +56,7 @@ public class TxOutput implements Serializable {
     public static JSONArray arrayToJson(ArrayList<TxOutput> outputs) {
         JSONArray jsonArray = new JSONArray();
         for (TxOutput output : outputs) {
-            jsonArray.put(output.toJson().toString());
+            jsonArray.put(output.toJson());
         }
         return jsonArray;
     }
