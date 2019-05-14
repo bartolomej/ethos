@@ -3,6 +3,8 @@ package core;
 import core.transaction.CoinbaseTransaction;
 import core.transaction.Transaction;
 import crypto.HashUtil;
+import errors.TransactionException;
+import org.json.JSONObject;
 import util.ByteUtil;
 import util.StringUtil;
 
@@ -30,6 +32,8 @@ public class Block {
     private ArrayList<Transaction> transactions;
 
     public Block(byte[] hash, byte[] previousBlockHash, byte[] miner, int difficulty, int index) {
+        this.hash = hash;
+        this.miner = miner;
         this.transactions = new ArrayList<>();
         this.previousBlockHash = previousBlockHash;
         this.index = index;
@@ -42,6 +46,14 @@ public class Block {
         this.index = index;
         this.miner = miner;
         this.difficulty = difficulty;
+    }
+
+    public long getDifficulty() {
+        return this.difficulty;
+    }
+
+    public int getIndex() {
+        return this.index;
     }
 
     public long getTimestamp() {
@@ -71,6 +83,16 @@ public class Block {
 
     public boolean isParentOf(Block block) {
         return ByteUtil.arraysEqual(block.getHash(), this.previousBlockHash);
+    }
+
+    public boolean equals(Block block) {
+        return (
+                ByteUtil.arraysEqual(this.hash, block.getHash()) &&
+                ByteUtil.arraysEqual(this.miner, block.getMiner()) &&
+                ByteUtil.arraysEqual(this.previousBlockHash, block.getPreviousBlockHash()) &&
+                this.timestamp == block.getTimestamp() &&
+                this.difficulty == block.getDifficulty()
+        );
     }
 
     public boolean valid(byte[] prevBlockHash) {
@@ -151,8 +173,21 @@ public class Block {
         encoded += "miner=" + (this.miner == null ? "null" : ByteUtil.toHexString(this.miner)) + suffix;
         encoded += "prev_block=" + ByteUtil.toHexString(this.previousBlockHash) + suffix;
         encoded += "hash=" + this.getStringHash() + suffix;
+        // TODO: add merkle root
         // encoded += "transaction_root=" + ByteUtil.toHexString(this.transactionsRootHash) + suffix;
         encoded += "}";
         return encoded;
+    }
+
+    public JSONObject toJson() {
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
+                ByteUtil.toHexString(this.hash),
+                this.difficulty,
+                this.index,
+                this.timestamp,
+                ByteUtil.toHexString(this.miner),
+                ByteUtil.toHexString(this.previousBlockHash)
+        );
+        return new JSONObject(json);
     }
 }

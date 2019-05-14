@@ -1,4 +1,4 @@
-package core;
+package errors;
 
 public class BlockException extends Exception{
 

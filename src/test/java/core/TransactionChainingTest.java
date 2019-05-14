@@ -5,6 +5,7 @@ import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;
 import crypto.KeyUtil;
+import errors.TransactionException;
 import org.junit.Test;
 
 import java.security.InvalidKeyException;

@@ -48,10 +48,50 @@ public class HelperGenerator {
         return tx1;
     }
 
+    public static ArrayList<Transaction> generateTwoTransactionArrayWithGenesis() throws InvalidKeySpecException, InvalidKeyException {
+        ArrayList<Transaction> transactions = new ArrayList<>();
+
+        // coinbase transaction
+        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(HelperGenerator.address);
+
+        // input-outputs for tx1
+        ArrayList<TxInput> inputsTx1 = new ArrayList<>();
+        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
+        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
+        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
+
+        // first transaction
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, HelperGenerator.publicKey);
+        try {
+            tx1.sign(HelperGenerator.privateKey);
+        } catch (InvalidKeyException e) {
+            assertNull(e);
+        }
+
+        transactions.add(coinbaseTx);
+        transactions.add(tx1);
+
+        return transactions;
+    }
+
+    public static Block generateTestEmptyBlock() {
+        return new Block(new byte[]{1,1,1,1,1,1,1}, new byte[]{0,0,0,0,0,0,0}, new byte[]{0,0,0}, 5, 1);
+    }
+
     @Test
     public void testTransactionGeneration() throws InvalidKeySpecException, InvalidKeyException {
         Transaction tx = generateTestValidTransaction();
 
         assertTrue(tx.valid());
+    }
+
+    @Test
+    public void testTwoArrayTransactionsGeneration() throws InvalidKeySpecException, InvalidKeyException {
+        ArrayList<Transaction> transactions = generateTwoTransactionArrayWithGenesis();
+
+        for (Transaction tx : transactions) {
+            assertTrue(tx.valid());
+        }
     }
 }

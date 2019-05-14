@@ -7,6 +7,7 @@ import core.transaction.TxOutput;
 import crypto.HashUtil;
 import crypto.KeyUtil;
 import crypto.SigUtil;
+import errors.TransactionException;
 import org.junit.Test;
 import util.ByteUtil;
 
@@ -55,7 +56,7 @@ public class TransactionExceptionsTest {
 
         try {
             tx1.validate();
-            assert false; // exception not triggered
+            assert false; // errors not triggered
         } catch (TransactionException e) {
             assertEquals(e.getMessage(), "Timestamp invalid");
         }
@@ -99,7 +100,7 @@ public class TransactionExceptionsTest {
 
         try {
             tx1.validate();
-            assert false; // exception not triggered
+            assert false; // errors not triggered
         } catch (TransactionException e) {
             assertEquals(e.getMessage(), "Insufficient inputs");
         }
@@ -143,7 +144,7 @@ public class TransactionExceptionsTest {
 
         try {
             tx1.validate();
-            assert false; // exception not triggered
+            assert false; // errors not triggered
         } catch (TransactionException e) {
             assertEquals(e.getMessage(), "Insufficient transaction fee");
         }

@@ -11,6 +11,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CoinbaseTransaction extends Transaction implements Serializable {
 
@@ -48,6 +49,35 @@ public class CoinbaseTransaction extends Transaction implements Serializable {
                 this.timestamp +
                 this.getOutputs().toString()
         );
+    }
+
+    @Override
+    public boolean valid() {
+        return (this.getInputs() == null && this.getOutputs().size() == 1);
+    }
+
+    @Override
+    public void validate() {
+
+    }
+
+    @Override
+    public boolean equals(Transaction transaction) {
+        return (
+                Arrays.equals(super.getSignature(), transaction.getSignature()) &
+                        this.outputsEquals(transaction.getOutputs()) &
+                        this.isSigValid() == transaction.isSigValid() &
+                        TxOutput.sum(super.getOutputs()) == TxOutput.sum(transaction.getOutputs())
+        );
+    }
+
+    private boolean outputsEquals(ArrayList<TxOutput> outputs1) {
+        if (super.getOutputs().size() != outputs1.size()) return false;
+        for (int i = 0; i < super.getOutputs().size(); i++) {
+            if (!super.getOutputs().get(i).equals(outputs1.get(i)))
+                return false;
+        }
+        return true;
     }
 
     public String toString() {

@@ -20,7 +20,7 @@ public class AccountStore {
             JsonParser jsonParser = new JsonParser();
             JsonElement jsonElement = jsonParser.parse(account.toString());
             String prettyJSON = gson.toJson(jsonElement);
-            FileWriter fileWriter = new FileWriter(Global.ROOT_DIR + filename);
+            FileWriter fileWriter = new FileWriter(Constants.ROOT_DIR + filename);
             fileWriter.write(prettyJSON);
             fileWriter.close();
         } catch (IOException e) {

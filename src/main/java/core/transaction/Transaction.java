@@ -1,9 +1,8 @@
 package core.transaction;
 
-import core.TransactionException;
+import errors.TransactionException;
 import crypto.*;
 import org.json.*;
-import util.ArrayUtil;
 import util.ByteUtil;
 import util.Serializable;
 
@@ -183,13 +182,14 @@ public class Transaction implements Serializable {
     }
 
     public boolean equals(Transaction transaction) {
+        if (transaction.getInputs() == null && this.getInputs() != null) return false;
         return (
-                Arrays.equals(this.signature, transaction.signature) &
-                this.inputsEquals(transaction.inputs) &
-                this.outputsEquals(transaction.outputs) &
-                this.isSigValid() == transaction.isSigValid() &
-                TxInput.sum(this.inputs) == TxInput.sum(transaction.inputs) &&
-                TxOutput.sum(this.outputs) == TxOutput.sum(transaction.outputs)
+                Arrays.equals(this.signature, transaction.getSignature()) &
+                this.inputsEquals(transaction.getInputs()) &
+                this.outputsEquals(transaction.getOutputs()) &
+                ByteUtil.arraysEqual(this.getSignature(), transaction.getSignature()) &
+                TxInput.sum(this.inputs) == TxInput.sum(transaction.getInputs()) &&
+                TxOutput.sum(this.outputs) == TxOutput.sum(transaction.getOutputs())
         );
     }
 
@@ -211,6 +211,7 @@ public class Transaction implements Serializable {
     }
 
     private boolean inputsEquals(ArrayList<TxInput> inputs1) {
+        if (inputs1 == null) return false;
         if (this.inputs.size() != inputs1.size()) return false;
         for (int i = 0; i < this.inputs.size(); i++) {
             if (!this.inputs.get(i).equals(inputs1.get(i)))

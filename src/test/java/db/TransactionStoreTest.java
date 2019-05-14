@@ -1,6 +1,6 @@
 package db;
 
-import config.Global;
+import config.Constants;
 import core.HelperGenerator;
 import core.transaction.Transaction;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class TransactionStoreTest {
     }
 
     private boolean fileExists(String path) {
-        path = Global.ROOT_DIR + "/" + path;
+        path = Constants.ROOT_DIR + "/" + path;
         return new File(path).exists();
     }
 

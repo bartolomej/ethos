@@ -1,5 +1,6 @@
 package util;
 
+import core.Block;
 import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;
@@ -54,5 +55,15 @@ public class ObjectParser {
             e.printStackTrace();
         }
         return tx;
+    }
+
+    public static Block parseJsonBlock(JSONObject block) {
+        byte[] hash = ByteUtil.toByteArray(block.getString("hash"));
+        byte[] miner = ByteUtil.toByteArray(block.getString("miner"));
+        byte[] prevBlockHash = ByteUtil.toByteArray(block.getString("prev_block_hash"));
+        int difficulty = block.getInt("difficulty");
+        long timestamp = block.getLong("timestamp");
+        int index = block.getInt("index");
+        return new Block(hash, prevBlockHash, miner, difficulty, index);
     }
 }

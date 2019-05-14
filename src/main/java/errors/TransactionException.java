@@ -1,6 +1,4 @@
-package core;
-
-import core.transaction.Transaction;
+package errors;
 
 public class TransactionException extends Exception {
 

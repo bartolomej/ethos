@@ -1,6 +1,7 @@
 package core;
 
 import crypto.KeyUtil;
+import org.json.JSONObject;
 import org.junit.Test;
 import util.ByteUtil;
 
@@ -34,6 +35,19 @@ public class BlockTest {
 
         assertEquals(firstBlock.getStringHash().substring(0, DIFFICULTY), "000");
         assertTrue(firstBlock.valid());
+        assertTrue(firstBlock.equals(firstBlock));
+
+        // expected json format
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
+                ByteUtil.toHexString(firstBlock.getHash()),
+                firstBlock.getDifficulty(),
+                firstBlock.getIndex(),
+                firstBlock.getTimestamp(),
+                ByteUtil.toHexString(firstBlock.getMiner()),
+                ByteUtil.toHexString(firstBlock.getPreviousBlockHash())
+        );
+
+        assertEquals(firstBlock.toJson().toString(), new JSONObject(json).toString());
 
         assertArrayEquals(firstBlock.getPreviousBlockHash(), genesisBlock.getHash());
     }

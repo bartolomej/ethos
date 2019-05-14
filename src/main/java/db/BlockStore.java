@@ -1,11 +1,24 @@
 package db;
 
+import config.Constants;
 import core.Block;
+import org.json.JSONObject;
+import util.ByteUtil;
+import util.ObjectParser;
 
 public class BlockStore {
 
-    public void save(byte[] hash, Block block) {
-        // implement
+    // store merkle tree in index file and locate transactions based on index
+
+    public static void save(byte[] hash, JSONObject block) {
+        String filepath = Constants.ROOT_DIR + ByteUtil.toHexString(hash) + ".json";
+        FileStore.store(filepath, block.toString());
+    }
+
+    public static Block read(byte[] hash) {
+        String filepath = Constants.ROOT_DIR + ByteUtil.toHexString(hash) + ".json";
+        JSONObject jsonBlock = new JSONObject(FileStore.read(filepath));
+        return ObjectParser.parseJsonBlock(jsonBlock);
     }
 
 }
