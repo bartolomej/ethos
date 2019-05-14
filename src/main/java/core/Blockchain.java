@@ -1,18 +1,35 @@
 package core;
 
+import core.block.AbstractBlock;
+import core.block.Block;
+import core.block.GenesisBlock;
+import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
+import crypto.KeyUtil;
+import events.EthosListener;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 
-public class Blockchain {
+public class Blockchain extends EthosListener {
 
     // implement synchronized methods -> allows multiple threads to access shared resource
-    // call methods from
 
-    static int difficulty = 5;
-    static byte[] testMiner = new byte[]{1,1,1,1,1};
+    // test miner
+    static KeyUtil keys = KeyUtil.generate();
+    static PrivateKey privateKey = keys.getPrivateKey();
+    static PublicKey publicKey = keys.getPublicKey();
+    static byte[] minerAddress = publicKey.getEncoded();
 
-    public static void addTransaction(Transaction tx) {
+    int difficulty = 2;
+    Chain chain;
+
+    public Blockchain() {
+        chain = new Chain();
+    }
+
+    public void addTransaction(AbstractTransaction tx) {
         if (tx.valid()) {
             TransactionPool.add(tx);
         } else {
@@ -20,10 +37,10 @@ public class Blockchain {
         }
     }
 
-    public static void createBlock(Block parent, List<Transaction> txs) {
-        Block candidate = new Block(
+    public void createBlock(AbstractBlock parent, List<AbstractTransaction> txs) {
+        AbstractBlock candidate = new Block(
                 parent.getHash(),
-                testMiner,
+                minerAddress,
                 difficulty,
                 parent.getIndex()+1
         );
@@ -31,12 +48,18 @@ public class Blockchain {
         if (!candidate.valid()) {
             System.out.println("Block invalid");
         }
-        Block validated = mineBlock(candidate);
-        // add to worker queue -> mine ?
-        // if validated block received terminate PoW execution
+        chain.add(mineBlock(candidate));
+        // TODO: add worker queue -> mine ?
+        // TODO: if validated block received terminate PoW execution
     }
 
-    private static Block mineBlock(Block block) {
+    public void createGenesisBlock() {
+        GenesisBlock genesis = new GenesisBlock(minerAddress, difficulty);
+        GenesisBlock mined = (GenesisBlock) mineBlock(genesis);
+        chain.add(mined);
+    }
+
+    private AbstractBlock mineBlock(AbstractBlock block) {
         // call hashValid() to avoid conflict ?
         while (!block.valid()) {
             block.computeHash();
@@ -44,7 +67,18 @@ public class Blockchain {
         return block;
     }
 
-    public static Block getBestBlock() {
-        return null;
+    public Chain getBlockchain() {
+        return this.chain;
+    }
+
+    public AbstractBlock getBestBlock() {
+        return chain.getLast();
+    }
+
+    public StatusReport onStatusReport() {
+        StatusReport report = new StatusReport("Blockchain");
+        report.add("chain_length", chain.getSize()+"");
+        report.add("best_block", chain.getLast().toJson());
+        return report;
     }
 }

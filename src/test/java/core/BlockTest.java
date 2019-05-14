@@ -1,9 +1,13 @@
 package core;
 
+import core.block.AbstractBlock;
+import core.block.Block;
+import core.block.GenesisBlock;
 import crypto.KeyUtil;
 import org.json.JSONObject;
 import org.junit.Test;
 import util.ByteUtil;
+import util.StringUtil;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -13,8 +17,8 @@ import static org.junit.Assert.*;
 public class BlockTest {
 
     @Test
-    public void firstBlock() {
-        int DIFFICULTY = 3;
+    public void genesisBlock() {
+        int DIFFICULTY = 2;
 
         // first account
         KeyUtil keys1 = KeyUtil.generate();
@@ -24,16 +28,34 @@ public class BlockTest {
         byte[] address1 = publicKey1.getEncoded();
 
         // blocks
-        GenesisBlock genesisBlock = GenesisBlock.generate();
+        GenesisBlock genesisBlock = GenesisBlock.generate(DIFFICULTY);
         mine(genesisBlock);
 
-        Block firstBlock = new Block(genesisBlock.getHash(), address1, 5, 1);
+        assertTrue(genesisBlock.valid());
+    }
+
+    @Test
+    public void firstBlock() {
+        int DIFFICULTY = 2;
+
+        // first account
+        KeyUtil keys1 = KeyUtil.generate();
+        PrivateKey privateKey1 = keys1.getPrivateKey();
+        PublicKey publicKey1 = keys1.getPublicKey();
+
+        byte[] address1 = publicKey1.getEncoded();
+
+        // blocks
+        GenesisBlock genesisBlock = GenesisBlock.generate(DIFFICULTY);
+        mine(genesisBlock);
+
+        Block firstBlock = new Block(genesisBlock.getHash(), address1, 2, 1);
         mine(firstBlock);
 
-        assertEquals(genesisBlock.getStringHash().substring(0, DIFFICULTY), "000");
+        assertEquals(genesisBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
         assertTrue(genesisBlock.valid());
 
-        assertEquals(firstBlock.getStringHash().substring(0, DIFFICULTY), "000");
+        assertEquals(firstBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
         assertTrue(firstBlock.valid());
         assertTrue(firstBlock.equals(firstBlock));
 
@@ -54,7 +76,7 @@ public class BlockTest {
 
     @Test
     public void firstFewBlocksChaining() {
-        int DIFFICULTY = 3;
+        int DIFFICULTY = 2;
 
         // first account
         KeyUtil keys1 = KeyUtil.generate();
@@ -64,7 +86,7 @@ public class BlockTest {
         byte[] address1 = publicKey1.getEncoded();
 
         // blocks
-        GenesisBlock genesisBlock = GenesisBlock.generate();
+        GenesisBlock genesisBlock = GenesisBlock.generate(DIFFICULTY);
         mine(genesisBlock);
 
         Block firstBlock = new Block(genesisBlock.getHash(), address1, DIFFICULTY, 1);
@@ -79,6 +101,11 @@ public class BlockTest {
         Block forthBlock = new Block(thirdBlock.getHash(), address1, DIFFICULTY, 4);
         mine(forthBlock);
 
+        assertEquals(firstBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
+        assertEquals(secondBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
+        assertEquals(thirdBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
+        assertEquals(forthBlock.getStringHash().substring(0, DIFFICULTY), StringUtil.repeat("0", DIFFICULTY));
+
         // chaining validation
         assertArrayEquals(firstBlock.getPreviousBlockHash(), genesisBlock.getHash());
         assertArrayEquals(secondBlock.getPreviousBlockHash(), firstBlock.getHash());
@@ -86,7 +113,7 @@ public class BlockTest {
         assertArrayEquals(forthBlock.getPreviousBlockHash(), thirdBlock.getHash());
     }
 
-    private void mine(Block block) {
+    private void mine(AbstractBlock block) {
         while (!block.valid())
             block.computeHash();
     }

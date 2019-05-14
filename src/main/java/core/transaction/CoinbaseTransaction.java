@@ -2,9 +2,9 @@ package core.transaction;
 
 import crypto.HashUtil;
 import crypto.KeyUtil;
+import errors.TransactionException;
 import org.json.JSONObject;
 import util.ByteUtil;
-import util.Serializable;
 
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
@@ -13,23 +13,20 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class CoinbaseTransaction extends Transaction implements Serializable {
+public class CoinbaseTransaction extends AbstractTransaction {
 
     public static long BLOCK_REWARD = 100;
-
-    private long timestamp;
-    private byte[] hash;
 
     public static CoinbaseTransaction generate(byte[] publicKey) throws InvalidKeySpecException, InvalidKeyException {
         ArrayList<TxOutput> outputs = new ArrayList<>();
         outputs.add(new TxOutput(publicKey, CoinbaseTransaction.BLOCK_REWARD, 0));
-        return new CoinbaseTransaction(publicKey, outputs);
+        long timestamp = System.currentTimeMillis();
+        return new CoinbaseTransaction(publicKey, null, timestamp, outputs);
     }
 
-    public CoinbaseTransaction(byte[] publicKey, ArrayList<TxOutput> outputs) throws InvalidKeyException, InvalidKeySpecException { // publicKey == receiveAddress for now
-        super(null, outputs, KeyUtil.parsePublicKey(publicKey));
-        this.timestamp = System.currentTimeMillis();
-        this.hash = HashUtil.sha256(getHeaderString().getBytes());
+    public CoinbaseTransaction(byte[] publicKey, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeyException, InvalidKeySpecException { // publicKey == receiveAddress for now
+        super(null, outputs, publicKey, signature, null, timestamp);
+        this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
     public byte[] getHash() {
@@ -51,17 +48,21 @@ public class CoinbaseTransaction extends Transaction implements Serializable {
         );
     }
 
-    @Override
     public boolean valid() {
         return (this.getInputs() == null && this.getOutputs().size() == 1);
     }
 
-    @Override
-    public void validate() {
-
+    public void validate() throws TransactionException {
+        if (this.inputs == null)
+            throw new TransactionException("Transaction inputs null");
+        if (this.outputs == null)
+            throw new TransactionException("Transaction outputs null");
+        if (this.signature == null)
+            throw new TransactionException("Transaction signature missing");
+        //if (!this.isSigValid())
+        //    throw new TransactionException("Transaction signature invalid");
     }
 
-    @Override
     public boolean equals(Transaction transaction) {
         return (
                 Arrays.equals(super.getSignature(), transaction.getSignature()) &

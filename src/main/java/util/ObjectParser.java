@@ -1,6 +1,6 @@
 package util;
 
-import core.Block;
+import core.block.Block;
 import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;

@@ -1,7 +1,7 @@
 package db;
 
 import config.Constants;
-import core.Block;
+import core.block.Block;
 import core.HelperGenerator;
 import org.junit.Test;
 import util.ByteUtil;

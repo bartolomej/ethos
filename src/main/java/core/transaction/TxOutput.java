@@ -3,12 +3,11 @@ package core.transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
-import util.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TxOutput implements Serializable {
+public class TxOutput {
 
     private byte[] txid;
     private long value;
@@ -61,7 +60,6 @@ public class TxOutput implements Serializable {
         return jsonArray;
     }
 
-    @Override
     public JSONObject toJson() {
         String json = String.format("{txid: %s, value: %s}",
                 ByteUtil.toHexString(this.txid), this.value
@@ -74,7 +72,6 @@ public class TxOutput implements Serializable {
         return this.toStringWithSuffix(", ");
     }
 
-    @Override
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxOutputData {";
         encoded += "txid=" + ByteUtil.toHexString(this.txid) + suffix;
@@ -83,7 +80,6 @@ public class TxOutput implements Serializable {
         return encoded;
     }
 
-    @Override
     public String toRawStringWithSuffix(String suffix) {
         return (ByteUtil.toHexString(this.txid) + suffix + this.value);
     }
@@ -92,7 +88,6 @@ public class TxOutput implements Serializable {
         return arrayToStringWithSuffix(array, ", ");
     }
 
-    // TODO: remove when resolve interface issue
     public static String arrayToStringWithSuffix(ArrayList<TxOutput> array, String suffix) {
         String out = "TxOutputArrayData [";
         for (TxOutput output : array) {

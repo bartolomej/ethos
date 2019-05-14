@@ -1,118 +1,41 @@
 package core.transaction;
 
+import config.Constants;
 import errors.TransactionException;
 import crypto.*;
 import org.json.*;
 import util.ByteUtil;
-import util.Serializable;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Transaction implements Serializable {
-
-    public static long MIN_FEE = 3;
-
-    private long timestamp;
-    private byte[] hash;
-    private byte[] signature;
-    private ArrayList<TxOutput> outputs;
-    private ArrayList<TxInput> inputs;
-    private PublicKey publicKey;
-
+public class Transaction extends AbstractTransaction {
 
     public Transaction(ArrayList<TxInput> inputs,
                        ArrayList<TxOutput> outputs,
                        byte[] publicKey, byte[] signature,
                        byte[] hash, long timestamp) throws InvalidKeySpecException {
-        this.timestamp = timestamp;
-        this.publicKey = KeyUtil.parsePublicKey(publicKey);
-        this.signature = signature;
-        this.outputs = outputs;
-        this.inputs = inputs;
-        this.hash = hash;
+        super(inputs, outputs, publicKey, signature, hash, timestamp);
     }
 
-    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature, byte[] hash, long timestamp) {
-        this.timestamp = timestamp;
-        this.publicKey = publicKey;
-        this.signature = signature;
-        this.outputs = outputs;
-        this.inputs = inputs;
-        this.hash = hash;
+    public Transaction(ArrayList<TxInput> inputs,
+                       ArrayList<TxOutput> outputs,
+                       PublicKey publicKey,
+                       byte[] signature,
+                       byte[] hash,
+                       long timestamp) {
+        super(inputs, outputs, publicKey, signature, hash, timestamp);
     }
 
-    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey, byte[] signature) {
-        this.timestamp = System.currentTimeMillis();
-        this.publicKey = publicKey;
-        this.signature = signature;
-        this.outputs = outputs;
-        this.inputs = inputs;
-    }
-
-    public Transaction(ArrayList<TxInput> inputs, ArrayList<TxOutput> outputs, PublicKey publicKey) {
-        this.timestamp = System.currentTimeMillis();
-        this.publicKey = publicKey;
-        this.outputs = outputs;
-        this.inputs = inputs;
-    }
-
-    public long getTimestamp() {
-        return this.timestamp;
-    }
-
-    public byte[] getHash() {
-        return this.hash;
-    }
-
-    public PublicKey getPublicKey() {
-        return this.publicKey;
-    }
-
-    public byte[] getSignature() {
-        return this.signature;
-    }
-
-    public long getInputsValue() {
-        return TxInput.sum(this.inputs);
-    }
-
-    public long getOutputsValue() {
-        return TxOutput.sum(this.outputs);
-    }
-
-    public ArrayList<TxInput> getInputs() {
-        return this.inputs;
-    }
-
-    public ArrayList<TxOutput> getOutputs() {
-        return this.outputs;
-    }
-
-    public void sign(PrivateKey privateKey) throws InvalidKeyException {
-        this.signature = SigUtil.sign(privateKey, this.getHeaderString().getBytes());
+    public Transaction(ArrayList<TxInput> inputs,
+                       ArrayList<TxOutput> outputs,
+                       PublicKey publicKey) {
+        super(inputs, outputs, publicKey, null, null, System.currentTimeMillis());
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
-    public void sign(byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException {
-        PrivateKey privateKey1 = KeyUtil.parsePrivateKey(privateKey);
-        this.signature = SigUtil.sign(privateKey1, this.getHeaderString().getBytes());
-        this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
-    }
-
-    public boolean isSigValid() {
-        try {
-            return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean verify() throws SignatureException, InvalidKeyException {
-        return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
-    }
 
     public boolean valid() {
         return (
@@ -165,7 +88,7 @@ public class Transaction implements Serializable {
     }
 
     public boolean validFee() {
-        return (TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) >= MIN_FEE);
+        return (TxInput.sum(this.inputs) - TxOutput.sum(this.outputs) >= Constants.MIN_TX_FEE);
     }
 
     public boolean sufficientInputs() {
@@ -237,7 +160,6 @@ public class Transaction implements Serializable {
         return this.toStringWithSuffix(", ");
     }
 
-    @Override
     public String toStringWithSuffix(String suffix) {
         String encoded = "TransactionData {";
         encoded += "hash=" + ByteUtil.toHexString(this.hash) + suffix;
@@ -249,7 +171,6 @@ public class Transaction implements Serializable {
         return encoded;
     }
 
-    @Override
     public String toRawStringWithSuffix(String suffix) {
         return (
                 TxOutput.sum(this.outputs) + suffix +

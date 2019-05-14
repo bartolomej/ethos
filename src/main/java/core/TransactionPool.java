@@ -1,5 +1,6 @@
 package core;
 
+import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
 import util.ByteUtil;
 
@@ -7,25 +8,35 @@ import java.util.ArrayList;
 
 public class TransactionPool {
 
-    private static ArrayList<Transaction> transactionQueue = new ArrayList<>();
+    private static ArrayList<AbstractTransaction> transactionQueue = new ArrayList<>();
 
     public static int size() {
         return transactionQueue.size();
     }
 
-    public static Transaction peek() {
+    public static AbstractTransaction peek() {
         if (transactionQueue.isEmpty()) return null;
         return transactionQueue.get(0);
     }
 
-    public static void add(Transaction transaction) {
+    public static ArrayList<AbstractTransaction> peekAll() {
+        return transactionQueue;
+    }
+
+    public static ArrayList<AbstractTransaction> pollAll() {
+        ArrayList<AbstractTransaction> txs = transactionQueue;
+        transactionQueue.clear();
+        return txs;
+    }
+
+    public static void add(AbstractTransaction transaction) {
         transactionQueue.add(transaction);
     }
 
     /*
      * Returns and removes last element in queue
      * Returns null if queue empty */
-    public static Transaction poll() {
+    public static AbstractTransaction poll() {
         if (transactionQueue.isEmpty()) return null;
         return transactionQueue.remove(0);
     }
@@ -34,8 +45,8 @@ public class TransactionPool {
         return transactionQueue.isEmpty();
     }
 
-    public static boolean contains(Transaction transaction) {
-        for (Transaction tx : transactionQueue) {
+    public static boolean contains(AbstractTransaction transaction) {
+        for (AbstractTransaction tx : transactionQueue) {
             if (tx.equals(transaction))
                 return true;
         }
@@ -43,7 +54,7 @@ public class TransactionPool {
     }
 
     public static boolean contains(byte[] hash) {
-        for (Transaction tx : transactionQueue) {
+        for (AbstractTransaction tx : transactionQueue) {
             if (ByteUtil.arraysEqual(tx.getHash(), hash))
                 return true;
         }

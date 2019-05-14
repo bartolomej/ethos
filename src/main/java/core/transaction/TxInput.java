@@ -3,12 +3,11 @@ package core.transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
-import util.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TxInput implements Serializable {
+public class TxInput {
 
     public byte[] txid; // pointing to transaction containing outputs -> used for retrieving transaction
     public int outputIndex; // which output of that transaction is referenced
@@ -91,7 +90,6 @@ public class TxInput implements Serializable {
         return arrayToStringWithSuffix(array, ", ");
     }
 
-    // TODO: remove when resolve interface issue
     public static String arrayToStringWithSuffix(ArrayList<TxInput> array, String suffix) {
         String out = "[";
         for (TxInput output : array) {

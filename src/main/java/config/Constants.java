@@ -20,6 +20,9 @@ public class Constants {
     public static long ZETO = 1000;
     public static long METO = 1;
 
-    // starting dynamic constants (tx fee,..)
+    public static int START_DIFFICULTY = 2;
+    public static int MIN_TX_FEE = 10;
+
+    // initial dynamic constants (tx fee,..)
     // ...
 }

@@ -1,5 +1,6 @@
 package core;
 
+import config.Constants;
 import core.transaction.CoinbaseTransaction;
 import core.transaction.Transaction;
 import core.transaction.*;
@@ -81,7 +82,7 @@ public class TransactionTest {
         inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
         outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(address1, 90 - Transaction.MIN_FEE, 1)); // sending rest back to itself
+        outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE, 1)); // sending rest back to itself
 
         // transaction parameters
         long timestamp = System.currentTimeMillis();
@@ -116,7 +117,7 @@ public class TransactionTest {
             assertEquals(e.getMessage(), "Insufficient transaction fee");
         }
         assertFalse(transaction.valid());
-        assertTrue((transaction.getInputsValue() - transaction.getOutputsValue()) < Transaction.MIN_FEE);
+        assertTrue((transaction.getInputsValue() - transaction.getOutputsValue()) < Constants.MIN_TX_FEE);
     }
 
     @Test
@@ -129,7 +130,7 @@ public class TransactionTest {
         byte[][] txOutputAddresses = new byte[][]{new byte[]{1,1,1,1,1,1}};
 
         ArrayList<TxInput> inputs = generateTestInputs(txInputAddresses, new long[]{100});
-        ArrayList<TxOutput> outputs = generateTestOutputs(txOutputAddresses, new long[]{97});
+        ArrayList<TxOutput> outputs = generateTestOutputs(txOutputAddresses, new long[]{100-Constants.MIN_TX_FEE});
 
         Transaction transaction = new Transaction(inputs, outputs, publicKey);
         try {
@@ -140,7 +141,7 @@ public class TransactionTest {
         }
 
         assertTrue(transaction.valid());
-        assertEquals((transaction.getInputsValue() - transaction.getOutputsValue()), Transaction.MIN_FEE);
+        assertEquals((transaction.getInputsValue() - transaction.getOutputsValue()), Constants.MIN_TX_FEE);
     }
 
     @Test

@@ -1,7 +1,7 @@
 package db;
 
 import config.Constants;
-import core.Block;
+import core.block.Block;
 import org.json.JSONObject;
 import util.ByteUtil;
 import util.ObjectParser;

@@ -1,9 +1,7 @@
 package core;
 
-import core.transaction.CoinbaseTransaction;
-import core.transaction.Transaction;
-import core.transaction.TxInput;
-import core.transaction.TxOutput;
+import core.block.Block;
+import core.transaction.*;
 import crypto.KeyUtil;
 import org.junit.Test;
 
@@ -48,8 +46,8 @@ public class HelperGenerator {
         return tx1;
     }
 
-    public static ArrayList<Transaction> generateTwoTransactionArrayWithGenesis() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<Transaction> transactions = new ArrayList<>();
+    public static ArrayList<AbstractTransaction> generateTwoTransactionArrayWithGenesis() throws InvalidKeySpecException, InvalidKeyException {
+        ArrayList<AbstractTransaction> transactions = new ArrayList<>();
 
         // coinbase transaction
         CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(HelperGenerator.address);
@@ -88,9 +86,9 @@ public class HelperGenerator {
 
     @Test
     public void testTwoArrayTransactionsGeneration() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<Transaction> transactions = generateTwoTransactionArrayWithGenesis();
+        ArrayList<AbstractTransaction> transactions = generateTwoTransactionArrayWithGenesis();
 
-        for (Transaction tx : transactions) {
+        for (AbstractTransaction tx : transactions) {
             assertTrue(tx.valid());
         }
     }

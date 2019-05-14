@@ -1,5 +1,6 @@
 package core;
 
+import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ public class TransactionPoolTest {
 
     @Test
     public void addTwoTransactionsToPool() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<Transaction> transactions = HelperGenerator.generateTwoTransactionArrayWithGenesis();
+        ArrayList<AbstractTransaction> transactions = HelperGenerator.generateTwoTransactionArrayWithGenesis();
 
         TransactionPool.add(transactions.get(0));
         TransactionPool.add(transactions.get(1));
@@ -48,9 +49,15 @@ public class TransactionPoolTest {
         assertTrue(TransactionPool.contains(transactions.get(1).getHash()));
 
         assertTrue(TransactionPool.peek().equals(transactions.get(0)));
-        assertTrue(TransactionPool.peek().equals(transactions.get(0)));
 
         assertEquals(TransactionPool.size(), 2);
+
+        assertTrue(TransactionPool.poll().equals(transactions.get(0)));
+        assertTrue(TransactionPool.poll().equals(transactions.get(1)));
+
+        assertTrue(TransactionPool.isEmpty());
+        assertNull(TransactionPool.peek());
+        assertNull(TransactionPool.poll());
     }
 
 }
