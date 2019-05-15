@@ -11,7 +11,7 @@ public abstract class EthosListener {
         return null;
     }; // calls many system modules for status report
 
-    void onNodeDiscovered(PeerNode node) {};
+    void onPeerDiscovered(PeerNode node) {};
     void onSyncUpdate() {};
 
     void onTransaction(Transaction tx) {};
@@ -19,4 +19,5 @@ public abstract class EthosListener {
 
     void onBlockRejected(Block block) {}; // implement error report class ?
     void onBlockMined(Block block) {};
+
 }

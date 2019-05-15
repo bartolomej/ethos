@@ -11,9 +11,9 @@ public class FileStoreTest {
     public void storeAndReadOutput() {
         String testOutput = "{\"value\": \"key\"}";
         String filepath = Constants.ROOT_DIR + "test.txt";
-        FileStore.store(filepath, testOutput);
+        FileSystemStore.store(filepath, testOutput);
 
-        assertEquals(FileStore.read(filepath), testOutput);
+        assertEquals(FileSystemStore.read(filepath), testOutput);
     }
 
 }

@@ -2,9 +2,6 @@ package config;
 
 public class Constants {
 
-    // static system configs
-    public static String STATIC_PEERS = "http://localhost:7000/"; // for centralised peer discovery
-
     // folder structure constants
     public static String ROOT_DIR = System.getProperty("user.dir") + "/";
     public static String DB_DIR = ROOT_DIR + "database/";

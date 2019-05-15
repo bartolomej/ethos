@@ -2,7 +2,10 @@ package core;
 
 import config.Constants;
 import config.SystemValues;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class StatusReport {
 
@@ -27,19 +30,23 @@ public class StatusReport {
     }
 
     public String toString() {
-        return getJson().toString();
+        return toJson().toString();
     };
 
     public JSONObject toJson() {
-        return getJson();
-    }
-
-    private JSONObject getJson() {
         JSONObject json = new JSONObject();
         json.put("module", this.module);
         json.put("timestamp", this.timestamp);
         json.put("node", this.node);
         json.put("report", this.stats);
         return json;
+    }
+
+    public static JSONArray parseReportsArray(ArrayList<StatusReport> reports) {
+        JSONArray jsonArray = new JSONArray();
+        for (StatusReport report : reports) {
+            jsonArray.put(report.toJson());
+        }
+        return jsonArray;
     }
 }

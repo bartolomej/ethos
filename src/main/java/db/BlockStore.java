@@ -12,12 +12,12 @@ public class BlockStore {
 
     public static void save(byte[] hash, JSONObject block) {
         String filepath = Constants.ROOT_DIR + ByteUtil.toHexString(hash) + ".json";
-        FileStore.store(filepath, block.toString());
+        FileSystemStore.store(filepath, block.toString());
     }
 
     public static Block read(byte[] hash) {
         String filepath = Constants.ROOT_DIR + ByteUtil.toHexString(hash) + ".json";
-        JSONObject jsonBlock = new JSONObject(FileStore.read(filepath));
+        JSONObject jsonBlock = new JSONObject(FileSystemStore.read(filepath));
         return ObjectParser.parseJsonBlock(jsonBlock);
     }
 

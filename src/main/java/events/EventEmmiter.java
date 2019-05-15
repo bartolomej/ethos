@@ -12,41 +12,40 @@ public class EventEmmiter {
 
     private static List<EthosListener> listeners = new ArrayList<>();
 
-    public void addListener(EthosListener listener) {
+    public static void addListener(EthosListener listener) {
         listeners.add(listener);
     }
 
-    public void onTransactionReceived(Transaction tx) {
+    public static void onTransactionReceived(Transaction tx) {
         for (EthosListener listener : listeners) {
             listener.onTransaction(tx);
         }
     }
 
-    public void onBlockReceived(Block block) {
+    public static void onBlockReceived(Block block) {
         for (EthosListener listener : listeners) {
             listener.onBlock(block);
         }
     }
 
-    public void onBlockMined(Block block) {
+    public static void onBlockMined(Block block) {
         for (EthosListener listener : listeners) {
             listener.onBlockMined(block);
         }
     }
 
-    public void onNodeDiscovered(PeerNode node) {
+    public static void onNodeDiscovered(PeerNode node) {
         for (EthosListener listener : listeners) {
-            listener.onNodeDiscovered(node);
+            listener.onPeerDiscovered(node);
         }
     }
 
-    public ArrayList<StatusReport> onStatusReportRequest() {
+    public static ArrayList<StatusReport> onStatusReportRequest() {
         ArrayList<StatusReport> reports = new ArrayList<>();
         for (EthosListener listener : listeners) {
             reports.add(listener.onStatusReport());
         }
         return reports;
     }
-
 
 }

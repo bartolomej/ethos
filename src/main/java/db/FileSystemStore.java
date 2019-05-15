@@ -1,10 +1,11 @@
 package db;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class FileStore {
+public class FileSystemStore {
 
     public static void store(String filepath, String content) {
         try {
@@ -27,6 +28,15 @@ public class FileStore {
             e.printStackTrace();
         }
         return input;
+    }
+
+    public static void makeDirectory(String path) {
+        File fs = new File(path);
+        if (fs.mkdir()) {
+            System.out.println("Directory created");
+        } else {
+            System.out.println("Failed to create directory");
+        }
     }
 
 }

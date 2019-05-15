@@ -37,6 +37,11 @@ public class Blockchain extends EthosListener {
         }
     }
 
+    public void addExternalBlock() {
+        // validate block
+        // cancel mining operations
+    }
+
     public void createBlock(AbstractBlock parent, List<AbstractTransaction> txs) {
         AbstractBlock candidate = new Block(
                 parent.getHash(),
