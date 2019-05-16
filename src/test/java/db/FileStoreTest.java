@@ -3,6 +3,8 @@ package db;
 import config.Constants;
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.*;
 
 public class FileStoreTest {
@@ -14,6 +16,11 @@ public class FileStoreTest {
         FileSystemStore.store(filepath, testOutput);
 
         assertEquals(FileSystemStore.read(filepath), testOutput);
+        removeFile(filepath);
+    }
+
+    private void removeFile(String path) {
+        new File(path).delete();
     }
 
 }

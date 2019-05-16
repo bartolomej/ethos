@@ -10,11 +10,21 @@ import util.StringUtil;
 
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Block extends AbstractBlock {
 
+    public Block(byte[] hash,
+                         byte[] previousBlockHash,
+                         byte[] txRoot,
+                         byte[] miner,
+                         long timestamp,
+                         int difficulty,
+                         int index) {
+        super(hash, previousBlockHash, txRoot, miner, timestamp, difficulty, index);
+    }
 
     public Block(byte[] hash, byte[] previousBlockHash, byte[] miner, int difficulty, int index) {
         super(hash, previousBlockHash, miner, difficulty, index);

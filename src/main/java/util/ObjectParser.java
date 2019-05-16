@@ -4,11 +4,13 @@ import core.block.Block;
 import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;
+import core.transaction.TxRootIndex;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ObjectParser {
 
@@ -41,6 +43,16 @@ public class ObjectParser {
         return outputs;
     }
 
+    public static TxRootIndex parseTxRootIndex(JSONObject index) {
+        byte[] blockHash = ByteUtil.toByteArray(index.getString("block_hash"));
+        JSONArray jsonArray = index.getJSONArray("transactions");
+        byte[][] transactions = new byte[jsonArray.length()][];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            transactions[i] = ByteUtil.toByteArray(jsonArray.getString(i));
+        }
+        return new TxRootIndex(blockHash, transactions);
+    }
+
     public static Transaction parseJsonTransaction(JSONObject transaction) {
         ArrayList<TxInput> inputs = parseJsonInputArray(transaction.getJSONArray("inputs"));
         ArrayList<TxOutput> outputs = parseJsonOutputArray(transaction.getJSONArray("outputs"));
@@ -60,10 +72,11 @@ public class ObjectParser {
     public static Block parseJsonBlock(JSONObject block) {
         byte[] hash = ByteUtil.toByteArray(block.getString("hash"));
         byte[] miner = ByteUtil.toByteArray(block.getString("miner"));
+        byte[] txRoot = ByteUtil.toByteArray(block.getString("tx_root"));
         byte[] prevBlockHash = ByteUtil.toByteArray(block.getString("prev_block_hash"));
         int difficulty = block.getInt("difficulty");
         long timestamp = block.getLong("timestamp");
         int index = block.getInt("index");
-        return new Block(hash, prevBlockHash, miner, difficulty, index);
+        return new Block(hash, prevBlockHash, txRoot, miner, timestamp, difficulty, index);
     }
 }

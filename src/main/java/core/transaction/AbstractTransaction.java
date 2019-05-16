@@ -4,6 +4,7 @@ import crypto.HashUtil;
 import crypto.KeyUtil;
 import crypto.SigUtil;
 import errors.TransactionException;
+import org.json.JSONObject;
 
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
@@ -47,6 +48,8 @@ public abstract class AbstractTransaction {
         this.inputs = inputs;
         this.hash = hash;
     }
+
+    abstract public JSONObject toJson();
 
     abstract public String getHeaderString();
 

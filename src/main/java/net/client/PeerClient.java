@@ -10,6 +10,8 @@ import javax.websocket.*;
 )
 public class PeerClient {
 
+    // https://www.baeldung.com/java-websockets
+
     @OnOpen
     public void onOpenConnection(Session session) {
         System.out.println("Opening connection");

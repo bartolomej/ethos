@@ -1,24 +1,64 @@
+import config.Constants;
+import config.SystemConfig;
+import core.Blockchain;
+import core.StateManager;
+import events.EventEmmiter;
 import net.server.HTTPServer;
 
+import java.io.File;
 import java.io.IOException;
 
 public class Start {
 
+    static StateManager stateManager;
+    static HTTPServer httpServer;
+
     public static void main(String[] args) {
+        stateManager = new StateManager();
+
+        registerListeners();
+        startServer();
+    }
+
+    private static void registerListeners() {
+        EventEmmiter.addListener(stateManager);
+    }
+
+    private static void startServer() {
         try {
-            HTTPServer server = new HTTPServer();
+            httpServer = new HTTPServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private void initDirs() {
+        if (!new File(Constants.DB_DIR).exists()) {
+            new File(Constants.DB_DIR).mkdir();
+        }
+        if (!new File(Constants.ACCOUNT_STORE_DIR).exists()) {
+            new File(Constants.ACCOUNT_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.BLOCK_STORE_DIR).exists()) {
+            new File(Constants.BLOCK_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.TX_STORE_DIR).exists()) {
+            new File(Constants.TX_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.PEERS_STORE_DIR).exists()) {
+            new File(Constants.PEERS_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.INDEX_STORE_DIR).exists()) {
+            new File(Constants.INDEX_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.LOG_DIR).exists()) {
+            new File(Constants.LOG_DIR).mkdir();
+        }
+    }
+
     // ON STARTUP
-    // check if initialized
     // check if stored state valid
     // sync blockchain
 
-    // FIRST STARTUP
-    // folder initialization
-    //
 
 }

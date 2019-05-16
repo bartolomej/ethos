@@ -1,10 +1,12 @@
 package core;
 
+import config.Constants;
 import core.block.Block;
 import core.transaction.*;
 import crypto.KeyUtil;
 import org.junit.Test;
 
+import java.io.File;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -23,6 +25,30 @@ public class HelperGenerator {
 
     public static long OUTPUT_VALUE = 10;
     public static long INPUT_VALUE = 100;
+
+    public static void generateDbFolderStructure() {
+        if (!new File(Constants.DB_DIR).exists()) {
+            new File(Constants.DB_DIR).mkdir();
+        }
+        if (!new File(Constants.ACCOUNT_STORE_DIR).exists()) {
+            new File(Constants.ACCOUNT_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.BLOCK_STORE_DIR).exists()) {
+            new File(Constants.BLOCK_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.TX_STORE_DIR).exists()) {
+            new File(Constants.TX_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.PEERS_STORE_DIR).exists()) {
+            new File(Constants.PEERS_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.INDEX_STORE_DIR).exists()) {
+            new File(Constants.INDEX_STORE_DIR).mkdir();
+        }
+        if (!new File(Constants.LOG_DIR).exists()) {
+            new File(Constants.LOG_DIR).mkdir();
+        }
+    }
 
     public static Transaction generateTestValidTransaction() throws InvalidKeySpecException, InvalidKeyException {
 
@@ -74,7 +100,18 @@ public class HelperGenerator {
     }
 
     public static Block generateTestEmptyBlock() {
-        return new Block(new byte[]{1,1,1,1,1,1,1}, new byte[]{0,0,0,0,0,0,0}, new byte[]{0,0,0}, 5, 1);
+        return new Block(
+                new byte[]{1,1,1,1,1,1,1},
+                new byte[]{0,0,0,0,0,0,0},
+                new byte[]{0,0,0,0,0,0},
+                new byte[]{0,0,0},
+                System.currentTimeMillis(), 5, 1);
+    }
+
+    public static Block generateValidFullBlock() throws InvalidKeySpecException, InvalidKeyException {
+        ArrayList<AbstractTransaction> tx = generateTwoTransactionArrayWithGenesis();
+        // TODO generate block
+        return null;
     }
 
     @Test

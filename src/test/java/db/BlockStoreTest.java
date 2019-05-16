@@ -19,7 +19,7 @@ public class BlockStoreTest {
         BlockStore.save(block.getHash(), block.toJson());
         Block storedBlock = BlockStore.read(block.getHash());
 
-        String path = Constants.ROOT_DIR + ByteUtil.toHexString(block.getHash()) + ".json";
+        String path = Constants.BLOCK_STORE_DIR + ByteUtil.toHexString(block.getHash()) + ".json";
 
         assertTrue(storedBlock.equals(block));
         assertTrue(fileExists(path));

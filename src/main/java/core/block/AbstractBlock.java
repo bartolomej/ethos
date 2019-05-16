@@ -14,7 +14,7 @@ public abstract class AbstractBlock {
 
     // BLOCK HEADER
     private byte[] previousBlockHash;
-    private byte[] transactionsRootHash;
+    private byte[] transactionRootHash;
     public long timestamp;
     public long nonce = 0;
 
@@ -32,6 +32,24 @@ public abstract class AbstractBlock {
         this.transactions = new ArrayList<>();
         this.previousBlockHash = previousBlockHash;
         this.index = index;
+        this.difficulty = difficulty;
+    }
+
+    public AbstractBlock(byte[] hash,
+                         byte[] previousBlockHash,
+                         byte[] txRoot,
+                         byte[] miner,
+                         long timestamp,
+                         int difficulty,
+                         int index) {
+        transactions = new ArrayList<>();
+        this.hash = hash;
+        this.miner = miner;
+        this.transactions = new ArrayList<>();
+        this.previousBlockHash = previousBlockHash;
+        this.transactionRootHash = txRoot;
+        this.index = index;
+        this.timestamp = timestamp;
         this.difficulty = difficulty;
     }
 
@@ -74,7 +92,7 @@ public abstract class AbstractBlock {
     }
 
     public byte[] getTransactionsRootHash() {
-        return this.transactionsRootHash;
+        return this.transactionRootHash;
     }
 
     public String getStringHash() {
@@ -103,20 +121,20 @@ public abstract class AbstractBlock {
         encoded += "miner=" + (this.miner == null ? "null" : ByteUtil.toHexString(this.miner)) + suffix;
         encoded += "prev_block=" + ByteUtil.toHexString(this.previousBlockHash) + suffix;
         encoded += "hash=" + this.getStringHash() + suffix;
-        // TODO: add merkle root
-        // encoded += "transaction_root=" + ByteUtil.toHexString(this.transactionsRootHash) + suffix;
+        encoded += "tx_root=" + ByteUtil.toHexString(this.transactionRootHash) + suffix;
         encoded += "}";
         return encoded;
     }
 
     public JSONObject toJson() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx_root: %s}",
                 ByteUtil.toHexString(this.hash),
                 this.difficulty,
                 this.index,
                 this.timestamp,
                 ByteUtil.toHexString(this.miner),
-                ByteUtil.toHexString(this.previousBlockHash)
+                ByteUtil.toHexString(this.previousBlockHash),
+                ByteUtil.toHexString(this.transactionRootHash)
         );
         return new JSONObject(json);
     }
