@@ -17,7 +17,7 @@ public class BlockStoreTest {
         Block block = HelperGenerator.generateTestEmptyBlock();
 
         BlockStore.save(block.getHash(), block.toJson());
-        Block storedBlock = BlockStore.read(block.getHash());
+        Block storedBlock = BlockStore.getByHash(block.getHash());
 
         String path = Constants.BLOCK_STORE_DIR + ByteUtil.toHexString(block.getHash()) + ".json";
 

@@ -1,4 +1,4 @@
-package core;
+package core.block;
 
 import core.block.AbstractBlock;
 import core.block.Block;

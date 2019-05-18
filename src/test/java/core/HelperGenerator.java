@@ -57,10 +57,10 @@ public class HelperGenerator {
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
+        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
 
         // first transaction
         Transaction tx1 = new Transaction(inputsTx1, outputsTx1, HelperGenerator.publicKey);
@@ -80,10 +80,10 @@ public class HelperGenerator {
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
+        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
 
         // first transaction
         Transaction tx1 = new Transaction(inputsTx1, outputsTx1, HelperGenerator.publicKey);

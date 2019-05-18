@@ -1,4 +1,4 @@
-package core;
+package core.transaction;
 
 import config.Constants;
 import core.transaction.CoinbaseTransaction;
@@ -37,12 +37,13 @@ public class TransactionChainingTest {
         // coinbase transaction
         CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(address1);
 
+        // TODO: adjust for new input/outputs design
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE, 1)); // sending rest back to itself -> include fee
+       // outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE, 1)); // sending rest back to itself -> include fee
 
         // first transaction
         Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1);
@@ -75,9 +76,9 @@ public class TransactionChainingTest {
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getHash(), 100, 0));
+        //inputsTx1.add(new TxInput(coinbaseTx.getHash(), 100, 0));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0));
+        //outputsTx1.add(new TxOutput(address2, 10, 0));
 
         // first transaction
         Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1);
@@ -89,9 +90,9 @@ public class TransactionChainingTest {
 
         // input-outputs for tx2
         ArrayList<TxInput> inputsTx2 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getHash(), 100, 0));
+        //inputsTx1.add(new TxInput(coinbaseTx.getHash(), 100, 0));
         ArrayList<TxOutput> outputsTx2 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0));
+        //outputsTx1.add(new TxOutput(address2, 10, 0));
 
         Transaction tx2 = new Transaction(inputsTx2, outputsTx2, publicKey2);
         try {

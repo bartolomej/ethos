@@ -1,5 +1,6 @@
 package core.transaction;
 
+import crypto.HashUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
@@ -9,23 +10,28 @@ import java.util.Arrays;
 
 public class TxOutput {
 
-    private byte[] txid;
+    private byte[] recipientPubKey;
     private long value;
-    private int outputIndex; // TODO: not for use
+    private int outputIndex;
 
-    public TxOutput(byte[] receiveAddress, long value, int outputIndex) {
-        this.txid = receiveAddress;
+    public TxOutput(byte[] recipientPubKey, long value, int outputIndex) {
+        this.recipientPubKey = recipientPubKey;
         this.outputIndex = outputIndex;
         this.value = value;
     }
 
-    public TxOutput(byte[] receiveAddress, long value) {
-        this.txid = receiveAddress;
-        this.value = value;
+    public byte[] getHashValue() {
+        String pubKey = ByteUtil.toHexString(this.getRecipientPubKey());
+        String valueSum = (
+                pubKey +
+                this.getOutputIndex() +
+                this.getValue()
+        );
+        return HashUtil.sha256(valueSum.getBytes());
     }
 
-    public byte[] getTxid() {
-        return this.txid;
+    public byte[] getRecipientPubKey() {
+        return this.recipientPubKey;
     }
 
     public int getOutputIndex() {
@@ -37,11 +43,11 @@ public class TxOutput {
     }
 
     public boolean valid() {
-        return this.txid != null;
+        return this.recipientPubKey != null;
     }
 
     public boolean equals(TxOutput output) {
-        return Arrays.equals(this.txid, output.txid) & this.value == output.value;
+        return Arrays.equals(this.recipientPubKey, output.recipientPubKey) & this.value == output.value;
     }
 
     public static long sum(ArrayList<TxOutput> inputs) {
@@ -61,8 +67,8 @@ public class TxOutput {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{txid: %s, value: %s}",
-                ByteUtil.toHexString(this.txid), this.value
+        String json = String.format("{recipient_pub_key: %s, output_index: %s, value: %s}",
+                ByteUtil.toHexString(this.recipientPubKey), this.outputIndex, this.value
         );
         return new JSONObject(json);
     }
@@ -74,14 +80,15 @@ public class TxOutput {
 
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxOutputData {";
-        encoded += "txid=" + ByteUtil.toHexString(this.txid) + suffix;
+        encoded += "recipient_pub_key=" + ByteUtil.toHexString(this.recipientPubKey) + suffix;
+        encoded += "output_index=" + this.outputIndex + suffix;
         encoded += "value=" + this.value;
         encoded += "}";
         return encoded;
     }
 
     public String toRawStringWithSuffix(String suffix) {
-        return (ByteUtil.toHexString(this.txid) + suffix + this.value);
+        return (ByteUtil.toHexString(this.recipientPubKey) + suffix + this.value);
     }
 
     public static String arrayToString(ArrayList<TxOutput> array) {

@@ -1,35 +1,51 @@
 package core.transaction;
 
+import crypto.HashUtil;
+import crypto.KeyUtil;
+import crypto.SigUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
 
+import java.security.InvalidKeyException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TxInput {
 
-    public byte[] txid; // pointing to transaction containing outputs -> used for retrieving transaction
-    public int outputIndex; // which output of that transaction is referenced
-    // wallet software generated appropriate number of outputs (one for me, one for Alice)
+    private byte[] txHash; // pointing to transaction containing outputs -> used for retrieving transaction
+    private byte[] prevOutputHash;
+    private int prevOutputIndex; // which output of that transaction is referenced
+    private byte[] signature;
     public long value;
+    private TxOutput prevOutput;
 
+    public TxInput(byte[] signature, byte[] txHash, TxOutput prevOutput) {
+        this.prevOutputHash = prevOutput.getHashValue();
+        this.txHash = txHash;
+        this.signature = signature;
+        this.prevOutputIndex = prevOutput.getOutputIndex();
+        this.value = prevOutput.getValue();
+        this.prevOutput = prevOutput;
+    }
 
-    public TxInput(byte[] referenceAddress, long value, int outputIndex) { // pass raw values or object references ?
-        this.txid = referenceAddress;
-        this.outputIndex = outputIndex;
+    public TxInput(byte[] signature, byte[] txHash, byte[] prevOutputHash, int prevOutputIndex, long value) {
+        this.prevOutputHash = prevOutputHash;
+        this.txHash = txHash;
+        this.signature = signature;
+        this.prevOutputIndex = prevOutputIndex;
         this.value = value;
     }
 
-    // constructor that accepts prev output
-    public TxInput(TxOutput prevOutput) {
-        this.txid = prevOutput.getTxid();
-        this.outputIndex = prevOutput.getOutputIndex();
-        this.value = prevOutput.getValue();
+    public byte[] getPrevOutputHash() {
+        return this.prevOutputHash;
     }
 
-    public byte[] getTxid() {
-        return this.txid;
+    public byte[] getTxHash() {
+        return this.txHash;
     }
 
     public long getValue() {
@@ -37,12 +53,28 @@ public class TxInput {
     }
 
     public int getOutputIndex() {
-        return this.outputIndex;
+        return this.prevOutputIndex;
+    }
+
+    public boolean valid() {
+        PublicKey publicKey;
+        boolean valid;
+        try {
+            publicKey = KeyUtil.parsePublicKey(this.prevOutput.getRecipientPubKey());
+            valid = SigUtil.verify(publicKey, this.signature, prevOutput.getHashValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return valid;
     }
 
     public boolean equals(TxInput input) {
-        return Arrays.equals(this.txid, input.txid) &
-                this.outputIndex == input.outputIndex & this.value == input.value;
+        return (
+                Arrays.equals(this.txHash, input.getTxHash()) &
+                this.prevOutputIndex == input.getOutputIndex() &
+                this.value == input.getValue()
+        );
     }
 
     public static int sum(ArrayList<TxInput> inputs) {
@@ -62,8 +94,11 @@ public class TxInput {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{txid: %s, value: %s, output_index: %s}",
-                (this.txid == null ? "" : ByteUtil.toHexString(this.txid)), this.value, this.outputIndex
+        String json = String.format("{tx_hash: %s, sig: %s, prev_output_hash: %s, value: %s, output_index: %s}",
+                (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)),
+                ByteUtil.toHexString(this.signature),
+                ByteUtil.toHexString(this.prevOutputHash),
+                this.value, this.prevOutputIndex
         );
         return new JSONObject(json);
     }
@@ -74,16 +109,18 @@ public class TxInput {
 
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxInputData {";
-        encoded += "txid=" + (this.txid == null ? "" : ByteUtil.toHexString(this.txid)) + suffix;
-        encoded += "output_index=" + this.outputIndex + suffix;
+        encoded += "tx_hash=" + (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)) + suffix;
+        encoded += "prev_out_hash=" + ByteUtil.toHexString(this.prevOutputHash) + suffix;
+        encoded += "sig=" + ByteUtil.toHexString(this.signature) + suffix;
+        encoded += "output_index=" + this.prevOutputIndex + suffix;
         encoded += "value=" + this.value;
         encoded += "}";
         return encoded;
     }
 
     public String toRawStringWithSuffix(String suffix) {
-        return ((this.txid == null ? "" : ByteUtil.toHexString(this.txid)) +
-                suffix + this.value + suffix + this.outputIndex);
+        return ((this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)) +
+                suffix + this.value + suffix + this.prevOutputIndex);
     }
 
     public static String arrayToString(ArrayList<TxInput> array) {

@@ -64,6 +64,10 @@ public class TxRootIndex {
         return this.blockHash;
     }
 
+    public byte[][] getTxHashes() {
+        return this.txHashes;
+    }
+
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("block_hash", ByteUtil.toHexString(this.blockHash));

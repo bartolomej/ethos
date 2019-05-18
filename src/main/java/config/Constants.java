@@ -6,7 +6,7 @@ public class Constants {
     public static String ROOT_DIR = System.getProperty("user.dir") + "/";
     public static String DB_DIR = ROOT_DIR + "database/";
     public static String LOG_DIR = ROOT_DIR + "logs/";
-    public static String BLOCK_STORE_DIR = DB_DIR + "blocks";
+    public static String BLOCK_STORE_DIR = DB_DIR + "blocks/";
     public static String TX_STORE_DIR = DB_DIR + "tx/";
     public static String INDEX_STORE_DIR = DB_DIR + "index/";
     public static String ACCOUNT_STORE_DIR = DB_DIR + "accounts/";

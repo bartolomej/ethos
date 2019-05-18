@@ -17,15 +17,15 @@ public class CoinbaseTransaction extends AbstractTransaction {
 
     public static long BLOCK_REWARD = 100;
 
-    public static CoinbaseTransaction generate(byte[] publicKey) throws InvalidKeySpecException, InvalidKeyException {
+    public static CoinbaseTransaction generate(byte[] recipientPubKey) throws InvalidKeySpecException, InvalidKeyException {
         ArrayList<TxOutput> outputs = new ArrayList<>();
-        outputs.add(new TxOutput(publicKey, CoinbaseTransaction.BLOCK_REWARD, 0));
+        outputs.add(new TxOutput(recipientPubKey, CoinbaseTransaction.BLOCK_REWARD, 0));
         long timestamp = System.currentTimeMillis();
-        return new CoinbaseTransaction(publicKey, null, timestamp, outputs);
+        return new CoinbaseTransaction(recipientPubKey, null, timestamp, outputs);
     }
 
-    public CoinbaseTransaction(byte[] publicKey, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeyException, InvalidKeySpecException { // publicKey == receiveAddress for now
-        super(null, outputs, publicKey, signature, null, timestamp);
+    public CoinbaseTransaction(byte[] recipientPubKey, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeyException, InvalidKeySpecException { // recipientPubKey == receiveAddress for now
+        super(null, outputs, recipientPubKey, signature, null, timestamp);
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
@@ -63,7 +63,7 @@ public class CoinbaseTransaction extends AbstractTransaction {
         //    throw new TransactionException("Transaction signature invalid");
     }
 
-    public boolean equals(Transaction transaction) {
+    public boolean equals(AbstractTransaction transaction) {
         return (
                 Arrays.equals(super.getSignature(), transaction.getSignature()) &
                         this.outputsEquals(transaction.getOutputs()) &

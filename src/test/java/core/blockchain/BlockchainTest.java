@@ -1,5 +1,8 @@
-package core;
+package core.blockchain;
 
+import core.Blockchain;
+import core.HelperGenerator;
+import core.TransactionPool;
 import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
 import org.junit.Test;

@@ -15,16 +15,19 @@ import java.util.List;
 public class ObjectParser {
 
     public static TxInput parseJsonInput(JSONObject input) {
-        byte[] txid = ByteUtil.toByteArray(input.getString("txid"));
+        byte[] sig = ByteUtil.toByteArray(input.getString("sig"));
+        byte[] txHash = ByteUtil.toByteArray(input.getString("tx_hash"));
+        byte[] prevOutputHash = ByteUtil.toByteArray(input.getString("prev_output_hash"));
         long value = input.getLong("value");
         int outputIndex = input.getInt("output_index");
-        return new TxInput(txid, value, outputIndex);
+        return new TxInput(sig, txHash, prevOutputHash, outputIndex, value);
     }
 
     public static TxOutput parseJsonOutput(JSONObject output) {
-        byte[] txid = ByteUtil.toByteArray(output.getString("txid"));
+        byte[] recipientPubKey = ByteUtil.toByteArray(output.getString("recipient_pub_key"));
+        int outputIndex = output.getInt("output_index");
         long value = output.getLong("value");
-        return new TxOutput(txid, value);
+        return new TxOutput(recipientPubKey, value, outputIndex);
     }
 
     public static ArrayList<TxInput> parseJsonInputArray(JSONArray inputArray) {

@@ -51,6 +51,8 @@ public abstract class AbstractTransaction {
 
     abstract public JSONObject toJson();
 
+    abstract public boolean equals(AbstractTransaction tx);
+
     abstract public String getHeaderString();
 
     abstract public boolean valid();

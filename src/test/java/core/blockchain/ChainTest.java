@@ -1,5 +1,6 @@
-package core;
+package core.blockchain;
 
+import core.Chain;
 import core.block.Block;
 import core.block.GenesisBlock;
 import org.junit.Test;

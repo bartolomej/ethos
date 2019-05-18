@@ -77,11 +77,14 @@ public class ObjectParserTest {
     }
 
     private TxInput generateTestInput() {
-        return new TxInput(new byte[]{0,0,0,0}, 100, 1);
+        byte[] signature = new byte[]{0,0,0,0};
+        byte[] txHash = new byte[]{1,1,1,1};
+        return new TxInput(signature, txHash, generateTestOutput());
     }
 
     private TxOutput generateTestOutput() {
-        return new TxOutput(new byte[]{0,0,0,0}, 100);
+         byte[] recipientPubKey = new byte[]{0,0,0,0};
+        return new TxOutput(recipientPubKey, 100, 0);
     }
 
 }

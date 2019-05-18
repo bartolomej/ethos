@@ -1,4 +1,4 @@
-package core;
+package core.transaction;
 
 import config.Constants;
 import core.transaction.CoinbaseTransaction;
@@ -40,12 +40,13 @@ public class TransactionExceptionsTest {
         // coinbase transaction
         CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(address1);
 
+        // TODO: adjust for new input/outputs design
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE, 1)); // sending rest back to itself
+        //outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE, 1)); // sending rest back to itself
 
         // transaction parameters
         long timestamp = System.currentTimeMillis() + 1000;
@@ -86,10 +87,10 @@ public class TransactionExceptionsTest {
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(address1, 101, 1)); // sending rest back to itself
+        //outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(address1, 101, 1)); // sending rest back to itself
 
         // transaction parameters
         long timestamp = System.currentTimeMillis();
@@ -130,10 +131,10 @@ public class TransactionExceptionsTest {
 
         // input-outputs for tx1
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
+        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
-        outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE + 1, 1)); // sending rest back to itself
+        //outputsTx1.add(new TxOutput(address2, 10, 0)); // sending some to other address
+        //outputsTx1.add(new TxOutput(address1, 90 - Constants.MIN_TX_FEE + 1, 1)); // sending rest back to itself
 
         // transaction parameters
         long timestamp = System.currentTimeMillis();

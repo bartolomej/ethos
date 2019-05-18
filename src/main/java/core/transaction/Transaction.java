@@ -43,7 +43,9 @@ public class Transaction extends AbstractTransaction {
                 this.inputs != null && this.outputs != null && this.hash != null &&
                 this.isSigValid() &&
                 this.sufficientInputs() &&
-                this.validFee()
+                this.validFee() &&
+                this.validInputs() &&
+                this.validOutputs()
         );
     }
 
@@ -54,6 +56,10 @@ public class Transaction extends AbstractTransaction {
             throw new TransactionException("Transaction inputs null");
         if (this.outputs == null)
             throw new TransactionException("Transaction outputs null");
+        if (!this.validInputs())
+            throw  new TransactionException("Inputs invalid");
+        if (!this.validOutputs())
+            throw new TransactionException("Outputs invalid");
         if (this.signature == null)
             throw new TransactionException("Transaction signature missing");
         if (!this.isSigValid())
@@ -68,6 +74,10 @@ public class Transaction extends AbstractTransaction {
         ArrayList<TransactionException> exceptions = new ArrayList<>();
         if (!this.validTimestamp())
             exceptions.add(new TransactionException("Timestamp invalid"));
+        if (!this.validInputs())
+            exceptions.add(new TransactionException("Inputs invalid"));
+        if (!this.validOutputs())
+            exceptions.add(new TransactionException("Outputs invalid"));
         if (this.inputs == null)
             exceptions.add(new TransactionException("Transaction inputs null"));
         if (this.outputs == null)
@@ -81,6 +91,20 @@ public class Transaction extends AbstractTransaction {
         if (!this.validFee())
             exceptions.add(new TransactionException("Insufficient transaction fee"));
         return exceptions;
+    }
+
+    private boolean validInputs() {
+        for (TxInput input : this.getInputs()) {
+            if (!input.valid()) return false;
+        }
+        return true;
+    }
+
+    private boolean validOutputs() {
+        for (TxOutput output : this.getOutputs()) {
+            if (!output.valid()) return false;
+        }
+        return true;
     }
 
     public boolean validTimestamp() {
@@ -104,7 +128,7 @@ public class Transaction extends AbstractTransaction {
         );
     }
 
-    public boolean equals(Transaction transaction) {
+    public boolean equals(AbstractTransaction transaction) {
         if (transaction.getInputs() == null && this.getInputs() != null) return false;
         return (
                 Arrays.equals(this.signature, transaction.getSignature()) &
@@ -169,16 +193,6 @@ public class Transaction extends AbstractTransaction {
         encoded += "outputs=" + TxOutput.arrayToStringWithSuffix(this.outputs, " ");
         encoded += "}";
         return encoded;
-    }
-
-    public String toRawStringWithSuffix(String suffix) {
-        return (
-                TxOutput.sum(this.outputs) + suffix +
-                ByteUtil.toHexString(this.signature) + suffix +
-                TxInput.arrayToStringWithSuffix(this.inputs, "") + suffix +
-                TxOutput.arrayToStringWithSuffix(this.outputs, "") + suffix +
-                ByteUtil.toHexString(this.hash) + suffix
-        );
     }
 
     public JSONObject toJson() {

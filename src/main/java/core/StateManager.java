@@ -14,10 +14,10 @@ import java.util.ArrayList;
 
 public class StateManager extends EthosListener {
 
-    Blockchain blockchain;
+    private Blockchain blockchain;
 
     public StateManager() {
-        new Blockchain();
+        blockchain = new Blockchain();
     }
 
     public void onTransaction(Transaction tx) {
@@ -39,20 +39,24 @@ public class StateManager extends EthosListener {
         // propagate to peers ?
     }
 
-    public void saveBlock(Block block) {
+    public static void saveBlock(Block block) {
         TxRootIndex txRootIndex = new TxRootIndex(block.getHash(), block.getTransactions());
 
         BlockStore.save(block.getHash(), block.toJson());
         TransactionStore.saveTxRootIndex(txRootIndex.getBlockHash(), txRootIndex.toJson());
-        saveTransactions(block.getTransactions());
-
-        // save TxInputs / TxOutputs on separate store ?
-    }
-
-    public void saveTransactions(ArrayList<AbstractTransaction> transactions) {
-        for (AbstractTransaction tx : transactions) {
+        for (AbstractTransaction tx : block.getTransactions()) {
             TransactionStore.save(tx.getHash(), tx.toJson());
         }
+    }
+
+    public static Block getBlock(byte[] hash) {
+        Block block = BlockStore.getByHash(hash);
+        TxRootIndex txRootIndex = TransactionStore.getTxRoot(hash);
+        byte[][] txHashes = txRootIndex.getTxHashes();
+        for (byte[] txHash : txHashes) {
+            block.addTransaction(TransactionStore.getTransaction(txHash));
+        }
+        return block;
     }
 
 }

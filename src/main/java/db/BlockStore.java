@@ -15,7 +15,7 @@ public class BlockStore {
         FileSystemStore.store(filepath, block.toString());
     }
 
-    public static Block read(byte[] hash) {
+    public static Block getByHash(byte[] hash) {
         String filepath = Constants.BLOCK_STORE_DIR + ByteUtil.toHexString(hash) + ".json";
         JSONObject jsonBlock = new JSONObject(FileSystemStore.read(filepath));
         return ObjectParser.parseJsonBlock(jsonBlock);
