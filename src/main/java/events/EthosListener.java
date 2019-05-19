@@ -7,17 +7,15 @@ import net.PeerNode;
 
 public abstract class EthosListener {
 
-    StatusReport onStatusReport() {
-        return null;
-    }; // calls many system modules for status report
+    public StatusReport onStatusReport() { return null; };
 
-    void onPeerDiscovered(PeerNode node) {};
-    void onSyncUpdate() {};
+    public void onPeerDiscovered(PeerNode node) {};
+    public void onSyncUpdate() {};
 
-    void onTransaction(Transaction tx) {};
-    void onBlock(Block block) {};
+    public void onTransaction(Transaction tx) {};
+    public void onBlock(Block block) {};
 
-    void onBlockRejected(Block block) {}; // implement error report class ?
-    void onBlockMined(Block block) {};
+    public void onBlockRejected(Block block) {}; // implement error report class ?
+    public void onBlockMined(Block block) {};
 
 }

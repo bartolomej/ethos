@@ -25,6 +25,10 @@ public class StatusReport {
         this.stats.put(key, value);
     }
 
+    public void add(String key, int value) {
+        this.stats.put(key, value);
+    }
+
     public void add(String key, JSONObject value) {
         this.stats.put(key, value);
     }

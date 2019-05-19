@@ -35,6 +35,7 @@ public class Chain {
     }
 
     public AbstractBlock getLast() {
+        if (chain.size() == 0) return null;
         return chain.get(chain.size() - 1);
     }
 

@@ -21,11 +21,13 @@ public class StateManager extends EthosListener {
     }
 
     public void onTransaction(Transaction tx) {
+        // check if transaction already received
         System.out.println("Transaction received");
         blockchain.addTransaction(tx);
     }
 
     public void onBlock(Block block) {
+        // check if block already received
         System.out.println("Block received");
     }
 
@@ -57,6 +59,18 @@ public class StateManager extends EthosListener {
             block.addTransaction(TransactionStore.getTransaction(txHash));
         }
         return block;
+    }
+
+    public static ArrayList<PeerNode> getPeers() {
+        return null;
+    }
+
+    public StatusReport onStatusReport() {
+        StatusReport report = new StatusReport("StateManager");
+        report.add("blockchain_size", blockchain.getBlockchain().getSize());
+        if (blockchain.getBestBlock() != null)
+            report.add("best_block", blockchain.getBestBlock().toJson());
+        return report;
     }
 
 }

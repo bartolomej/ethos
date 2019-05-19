@@ -5,9 +5,15 @@ public enum MessageTypes {
     PONG, // response to a ping message
     PEERS, // send list of known peers
     GET_PEERS, // requests a list of known peers
-    DISCONNECT,
-    ERROR,
+    ERROR, // an error occurred on request
+    INFO, // send monitoring info
     BLOCK, // block received
     TRANSACTION, // tx received
-    SYNC
+    SYNC,
+    OK // request fulfilled
 }
+
+/* NETWORK PROTOCOL DESC:
+ * - all requests use POST method
+ * - all messages use PeerMessage format
+ */

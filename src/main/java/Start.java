@@ -1,9 +1,7 @@
 import config.Constants;
-import config.SystemConfig;
-import core.Blockchain;
 import core.StateManager;
 import events.EventEmmiter;
-import net.server.HTTPServer;
+import net.HTTPServer;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,12 +14,9 @@ public class Start {
     public static void main(String[] args) {
         stateManager = new StateManager();
 
-        registerListeners();
-        startServer();
-    }
-
-    private static void registerListeners() {
         EventEmmiter.addListener(stateManager);
+
+        startServer();
     }
 
     private static void startServer() {

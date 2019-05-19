@@ -2,11 +2,13 @@ package events;
 
 import core.HelperGenerator;
 import core.StateManager;
+import core.StatusReport;
 import core.transaction.Transaction;
 import org.junit.Test;
 
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
@@ -17,8 +19,10 @@ public class EventEmmiterTest {
         TestSubscriber subscriber = new TestSubscriber();
         EventEmmiter.addListener(subscriber);
         EventEmmiter.onTransactionReceived(HelperGenerator.generateTestValidTransaction());
+        ArrayList<StatusReport> reports = EventEmmiter.onStatusReportRequest();
 
-        assertEquals(subscriber.counter, 1);
+        assertEquals(reports.size(), 1);
+        assertEquals(subscriber.counter, 2);
     }
 
 }
@@ -33,5 +37,10 @@ class TestSubscriber extends EthosListener {
     public void onTransaction(Transaction tx) {
         this.tx = tx;
         counter++;
+    }
+
+    public StatusReport onStatusReport() {
+        this.counter++;
+        return new StatusReport("test");
     }
 }

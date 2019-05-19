@@ -12,7 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.List;
 
-public class Blockchain extends EthosListener {
+public class Blockchain {
 
     // implement synchronized methods -> allows multiple threads to access shared resource
 
@@ -80,10 +80,4 @@ public class Blockchain extends EthosListener {
         return chain.getLast();
     }
 
-    public StatusReport onStatusReport() {
-        StatusReport report = new StatusReport("Blockchain");
-        report.add("chain_length", chain.getSize()+"");
-        report.add("best_block", chain.getLast().toJson());
-        return report;
-    }
 }

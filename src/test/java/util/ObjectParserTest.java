@@ -2,9 +2,11 @@ package util;
 
 import com.google.gson.JsonObject;
 import core.HelperGenerator;
+import core.block.Block;
 import core.transaction.Transaction;
 import core.transaction.TxInput;
 import core.transaction.TxOutput;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -15,6 +17,27 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 public class ObjectParserTest {
+
+    @Test
+    public void parseInvalidJsonInput() {
+        String invalidBlock = "{\n" +
+                "  \"difficulty\":3,\n" +
+                "  \"prev_block_hash\":\"00000000000000\",\n" +
+                "  \"tx_root\":\"02020202020202\",\n" +
+                "  \"index\":23,\n" +
+                "  \"hash\":\"01010101010101\",\n" +
+                "  \"miner\":\"030303030303\",\n" +
+                "}";
+        invalidBlock = invalidBlock.replace("\n", "");
+        JSONObject jsonObject = new JSONObject(invalidBlock);
+
+        try {
+            Block tx = ObjectParser.parseJsonBlock(jsonObject);
+        } catch (JSONException e) {
+            assertNotNull(e);
+        }
+
+    }
 
     @Test
     public void parseJsonInput() {

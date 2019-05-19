@@ -1,4 +1,4 @@
-package net.client;
+package net;
 
 import config.Constants;
 import config.SystemConfig;
@@ -12,33 +12,26 @@ import java.net.*;
 
 public class HTTPClient {
 
-    private static URL getRemoteUrl() {
+    private static URL parseToUrl(String address) {
         URL url = null;
         try {
-            url = new URL(SystemConfig.REMOTE_SERVER);
+            url = new URL(address);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
         return url;
     }
 
-    public static String getStaticPeers() {
+    public static String sendMessage(URL url, PeerMessage message) {
         String peers = "";
         try {
-            HttpURLConnection con = (HttpURLConnection) getRemoteUrl().openConnection();
-            con.setRequestMethod("GET");;
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");;
             con.setConnectTimeout(5000);
             con.setReadTimeout(5000);
             con.connect();
-            Reader streamReader = null;
-
-            if (con.getResponseCode() > 299) {
-                streamReader = new InputStreamReader(con.getErrorStream());
-            } else {
-                streamReader = new InputStreamReader(con.getInputStream());
-            }
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+            Reader streamReader = new InputStreamReader(con.getInputStream());
+            BufferedReader in = new BufferedReader(streamReader);
             String inputLine;
             StringBuffer content = new StringBuffer();
             while ((inputLine = in.readLine()) != null) {
