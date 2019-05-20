@@ -127,14 +127,28 @@ public abstract class AbstractBlock {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx_root: %s}",
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
+                ByteUtil.toHexString(this.hash),
+                this.difficulty,
+                this.index,
+                this.timestamp,
+                ByteUtil.toHexString(this.miner),
+                ByteUtil.toHexString(this.previousBlockHash)
+                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+        );
+        return new JSONObject(json);
+    }
+
+    public JSONObject toJsonFull() {
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
                 ByteUtil.toHexString(this.hash),
                 this.difficulty,
                 this.index,
                 this.timestamp,
                 ByteUtil.toHexString(this.miner),
                 ByteUtil.toHexString(this.previousBlockHash),
-                ByteUtil.toHexString(this.transactionRootHash)
+                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+                AbstractTransaction.arrayToJson(this.transactions)
         );
         return new JSONObject(json);
     }

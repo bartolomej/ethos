@@ -22,15 +22,6 @@ public class Transaction extends AbstractTransaction {
 
     public Transaction(ArrayList<TxInput> inputs,
                        ArrayList<TxOutput> outputs,
-                       PublicKey publicKey,
-                       byte[] signature,
-                       byte[] hash,
-                       long timestamp) {
-        super(inputs, outputs, publicKey, signature, hash, timestamp);
-    }
-
-    public Transaction(ArrayList<TxInput> inputs,
-                       ArrayList<TxOutput> outputs,
                        PublicKey publicKey) {
         super(inputs, outputs, publicKey, null, null, System.currentTimeMillis());
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());

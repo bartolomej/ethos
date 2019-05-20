@@ -17,10 +17,10 @@ public class ObjectParser {
     public static TxInput parseJsonInput(JSONObject input) {
         byte[] sig = ByteUtil.toByteArray(input.getString("sig"));
         byte[] txHash = ByteUtil.toByteArray(input.getString("tx_hash"));
-        byte[] prevOutputHash = ByteUtil.toByteArray(input.getString("prev_output_hash"));
+        byte[] prevTxHash = ByteUtil.toByteArray(input.getString("prev_tx_hash"));
         long value = input.getLong("value");
         int outputIndex = input.getInt("output_index");
-        return new TxInput(sig, txHash, prevOutputHash, outputIndex, value);
+        return new TxInput(sig, txHash, prevTxHash, outputIndex, value);
     }
 
     public static TxOutput parseJsonOutput(JSONObject output) {

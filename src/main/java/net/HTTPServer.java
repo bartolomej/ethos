@@ -2,6 +2,7 @@ package net;
 
 import com.sun.net.httpserver.*;
 import config.SystemValues;
+import errors.NetworkException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,10 +40,16 @@ public class HTTPServer {
             message = PeerMessage.decode(jsonBody);
         } catch (JSONException e) {
             invalidDataFormat(exchange, e);
+        } catch (NetworkException e) {
+            unknownException(exchange, e);
         }
 
-        PeerMessage response = NetService.onRequest(message);
-        sendJsonResponse(exchange, response.encode());
+        try {
+            PeerMessage response = NetService.onRequest(message);
+            sendJsonResponse(exchange, response.encode());
+        } catch (Exception e) {
+            unknownException(exchange, e);
+        }
     }
 
     private static void sendJsonResponse(HttpExchange exchange, byte[] content) {
@@ -63,6 +70,12 @@ public class HTTPServer {
 
     private static void invalidDataFormat(HttpExchange exchange, Exception e) {
         sendJsonResponse(exchange,  MessageGenerators.invalidRequest("Invalid data format", e));
+    }
+
+    private static void unknownException(HttpExchange exchange, Exception e) {
+        JSONObject eBody = new JSONObject();
+        eBody.put("error", ParseUtil.parseException(e));
+        sendJsonResponse(exchange, new PeerMessage(MessageTypes.ERROR, eBody).encode());
     }
 
     private static void logRequest(HttpExchange exchange) {

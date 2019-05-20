@@ -54,7 +54,7 @@ public class TransactionExceptionsTest {
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
         byte[] hash = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature, hash, timestamp);
 
         try {
             tx1.validate();
@@ -98,7 +98,7 @@ public class TransactionExceptionsTest {
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
         byte[] hash = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature, hash, timestamp);
 
         try {
             tx1.validate();
@@ -142,7 +142,7 @@ public class TransactionExceptionsTest {
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
         byte[] hash = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature, hash, timestamp);
 
         try {
             tx1.validate();

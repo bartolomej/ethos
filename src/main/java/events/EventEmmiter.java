@@ -43,7 +43,8 @@ public class EventEmmiter {
     public static ArrayList<StatusReport> onStatusReportRequest() {
         ArrayList<StatusReport> reports = new ArrayList<>();
         for (EthosListener listener : listeners) {
-            reports.add(listener.onStatusReport());
+            ArrayList<StatusReport> reports1 = listener.onStatusReports();
+            if (reports1 != null) reports.addAll(reports1);
         }
         return reports;
     }

@@ -13,6 +13,7 @@ import util.ByteUtil;
 
 import java.io.File;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -20,7 +21,7 @@ import static org.junit.Assert.*;
 public class StateManagerTest {
 
     @Test
-    public void storeWholeBlock() {
+    public void storeWholeBlock() throws InvalidKeySpecException {
         KeyUtil keys1 = KeyUtil.generate();
         PublicKey pubKey1 = keys1.getPublicKey();
 
@@ -53,7 +54,7 @@ public class StateManagerTest {
 
         byte[] sig1 = new byte[]{5,5,5,5,5,5};
         byte[] txHash1 = new byte[]{6,6,6,6,6};
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, pubKey1, sig1, txHash1, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, pubKey1.getEncoded(), sig1, txHash1, timestamp);
 
         block.addTransaction(tx1);
 

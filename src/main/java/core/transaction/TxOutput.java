@@ -10,6 +10,12 @@ import java.util.Arrays;
 
 public class TxOutput {
 
+    /* For a P2PKH-style output, Bob’s signature script will contain the following two pieces of data:
+     * His full (un-hashed) public key, so the pubKey script can check that it hashes to the same value as the pubKey hash provided by Alice.
+     * An secp256k1 signature made by using the ECDSA cryptographic formula to combine certain transaction data (described below) with Bob’s private key.
+     * This lets the pubKey script verify that Bob owns the private key which created the public key.
+     */
+
     private byte[] recipientPubKey;
     private long value;
     private int outputIndex;
@@ -20,6 +26,7 @@ public class TxOutput {
         this.value = value;
     }
 
+    // TODO: deprecate !
     public byte[] getHashValue() {
         String pubKey = ByteUtil.toHexString(this.getRecipientPubKey());
         String valueSum = (

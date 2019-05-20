@@ -11,6 +11,7 @@ public enum MessageTypes {
     TRANSACTION, // tx received
     SYNC,
     OK // request fulfilled
+    // TODO: DISCOVERY -> signals that node is synced and ready (peers add nodes address)
 }
 
 /* NETWORK PROTOCOL DESC:

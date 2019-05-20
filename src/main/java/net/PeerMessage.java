@@ -1,6 +1,7 @@
 package net;
 
 import config.SystemValues;
+import errors.NetworkException;
 import org.json.JSONObject;
 
 public class PeerMessage {
@@ -73,7 +74,7 @@ public class PeerMessage {
         return jsonObject;
     }
 
-    public static PeerMessage decode(JSONObject jsonObject) {
+    public static PeerMessage decode(JSONObject jsonObject) throws NetworkException {
         return new PeerMessage(
                 parseMsgType(jsonObject.getString("type")),
                 jsonObject.getString("address"),
@@ -84,7 +85,7 @@ public class PeerMessage {
         );
     }
 
-    public static MessageTypes parseMsgType(String type) {
+    public static MessageTypes parseMsgType(String type) throws NetworkException {
         switch (type) {
             case "PING": return MessageTypes.PING;
             case "PONG": return MessageTypes.PONG;
@@ -94,7 +95,8 @@ public class PeerMessage {
             case "BLOCK": return MessageTypes.BLOCK;
             case "TRANSACTION": return MessageTypes.TRANSACTION;
             case "SYNC": return MessageTypes.SYNC;
-            default: return null;
+            case "INFO": return MessageTypes.INFO;
+            default: throw new NetworkException("Unknown message type");
         }
     }
 

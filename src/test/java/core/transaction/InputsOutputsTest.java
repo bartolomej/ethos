@@ -24,6 +24,7 @@ public class InputsOutputsTest {
         TxOutput txOutput1 = new TxOutput(publicKey.getEncoded(), 10, 0);
 
         byte[] sig = SigUtil.sign(privateKey, txOutput1.getHashValue());
+        // TODO: deprecated TxInput constructor -> include prevTxHash as param !
         TxInput txInput1 = new TxInput(sig, txHash, txOutput1);
 
         assertTrue(txOutput1.valid());

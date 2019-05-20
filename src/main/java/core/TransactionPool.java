@@ -2,11 +2,12 @@ package core;
 
 import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
+import events.EthosListener;
 import util.ByteUtil;
 
 import java.util.ArrayList;
 
-public class TransactionPool {
+public class TransactionPool extends EthosListener {
 
     private static ArrayList<AbstractTransaction> transactionQueue = new ArrayList<>();
 
@@ -60,6 +61,5 @@ public class TransactionPool {
         }
         return false;
     }
-
 
 }

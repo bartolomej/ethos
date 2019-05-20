@@ -17,14 +17,18 @@ import java.util.Arrays;
 public class TxInput {
 
     private byte[] txHash; // pointing to transaction containing outputs -> used for retrieving transaction
-    private byte[] prevOutputHash;
+    private byte[] prevTxHash;
     private int prevOutputIndex; // which output of that transaction is referenced
+    /* SIGNATURE contains:
+     * -> previous transaction hash
+     * -> output index of previous transaction
+     */
     private byte[] signature;
     public long value;
     private TxOutput prevOutput;
 
     public TxInput(byte[] signature, byte[] txHash, TxOutput prevOutput) {
-        this.prevOutputHash = prevOutput.getHashValue();
+        this.prevTxHash = prevOutput.getHashValue();
         this.txHash = txHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutput.getOutputIndex();
@@ -32,8 +36,17 @@ public class TxInput {
         this.prevOutput = prevOutput;
     }
 
-    public TxInput(byte[] signature, byte[] txHash, byte[] prevOutputHash, int prevOutputIndex, long value) {
-        this.prevOutputHash = prevOutputHash;
+    public TxInput(byte[] signature, byte[] txHash, byte[] prevTxHash, TxOutput prevOutput) {
+        this.prevTxHash = prevTxHash;
+        this.txHash = txHash;
+        this.signature = signature;
+        this.prevOutputIndex = prevOutput.getOutputIndex();
+        this.value = prevOutput.getValue();
+        this.prevOutput = prevOutput;
+    }
+
+    public TxInput(byte[] signature, byte[] txHash, byte[] prevTxHash, int prevOutputIndex, long value) {
+        this.prevTxHash = prevTxHash;
         this.txHash = txHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutputIndex;
@@ -41,7 +54,7 @@ public class TxInput {
     }
 
     public byte[] getPrevOutputHash() {
-        return this.prevOutputHash;
+        return this.prevTxHash;
     }
 
     public byte[] getTxHash() {
@@ -57,11 +70,11 @@ public class TxInput {
     }
 
     public boolean valid() {
-        PublicKey publicKey;
         boolean valid;
         try {
-            publicKey = KeyUtil.parsePublicKey(this.prevOutput.getRecipientPubKey());
-            valid = SigUtil.verify(publicKey, this.signature, prevOutput.getHashValue());
+            PublicKey publicKey = KeyUtil.parsePublicKey(this.prevOutput.getRecipientPubKey());
+            valid = SigUtil.verify(publicKey, this.signature,
+                    (ByteUtil.toHexString(prevTxHash) + prevOutputIndex).getBytes());
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -97,7 +110,7 @@ public class TxInput {
         String json = String.format("{tx_hash: %s, sig: %s, prev_output_hash: %s, value: %s, output_index: %s}",
                 (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)),
                 ByteUtil.toHexString(this.signature),
-                ByteUtil.toHexString(this.prevOutputHash),
+                ByteUtil.toHexString(this.prevTxHash),
                 this.value, this.prevOutputIndex
         );
         return new JSONObject(json);
@@ -110,7 +123,7 @@ public class TxInput {
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxInputData {";
         encoded += "tx_hash=" + (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)) + suffix;
-        encoded += "prev_out_hash=" + ByteUtil.toHexString(this.prevOutputHash) + suffix;
+        encoded += "prev_out_hash=" + ByteUtil.toHexString(this.prevTxHash) + suffix;
         encoded += "sig=" + ByteUtil.toHexString(this.signature) + suffix;
         encoded += "output_index=" + this.prevOutputIndex + suffix;
         encoded += "value=" + this.value;

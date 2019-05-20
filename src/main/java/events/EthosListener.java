@@ -5,9 +5,11 @@ import core.StatusReport;
 import core.transaction.Transaction;
 import net.PeerNode;
 
+import java.util.ArrayList;
+
 public abstract class EthosListener {
 
-    public StatusReport onStatusReport() { return null; };
+    public ArrayList<StatusReport> onStatusReports() { return null; }
 
     public void onPeerDiscovered(PeerNode node) {};
     public void onSyncUpdate() {};

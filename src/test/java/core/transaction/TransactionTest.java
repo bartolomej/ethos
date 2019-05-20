@@ -68,7 +68,7 @@ public class TransactionTest {
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
         byte[] hash1 = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash1, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature, hash1, timestamp);
 
         assertEquals(headerString, tx1.getHeaderString());
         assertFalse(tx1.valid());
@@ -106,7 +106,7 @@ public class TransactionTest {
         byte[] signature = SigUtil.sign(privateKey1, headerString.getBytes());
         byte[] hash1 = HashUtil.sha256((headerString + ByteUtil.toHexString(signature)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature, hash1, timestamp);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature, hash1, timestamp);
 
         assertEquals(headerString, tx1.getHeaderString());
         assertTrue(tx1.valid());
@@ -143,7 +143,7 @@ public class TransactionTest {
         byte[] signature1 = SigUtil.sign(privateKey1, headerString1.getBytes());
         byte[] hash1 = HashUtil.sha256((headerString1 + ByteUtil.toHexString(signature1)).getBytes());
 
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1, signature1, hash1, timestamp1);
+        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, publicKey1.getEncoded(), signature1, hash1, timestamp1);
 
         // TRANSACTION 2: pubKey1_balance: 70, pubKey2_balance: 20
         byte[] sig1Tx2 = SigUtil.sign(privateKey1, tx1.getOutputs().get(1).getHashValue());
@@ -159,7 +159,7 @@ public class TransactionTest {
         byte[] signature2 = SigUtil.sign(privateKey1, headerString2.getBytes());
         byte[] hash2 = HashUtil.sha256((headerString2 + ByteUtil.toHexString(signature2)).getBytes());
 
-        Transaction tx2 = new Transaction(inputsTx2, outputsTx2, publicKey1, signature2, hash2, timestamp2);
+        Transaction tx2 = new Transaction(inputsTx2, outputsTx2, publicKey1.getEncoded(), signature2, hash2, timestamp2);
 
         assertEquals(headerString2, tx2.getHeaderString());
         assertTrue(tx2.valid());

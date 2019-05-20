@@ -105,7 +105,7 @@ public class CoinbaseTransaction extends AbstractTransaction {
         String json = String.format("{timestamp: %s, hash: %s, output: %s}",
                 this.timestamp,
                 ByteUtil.toHexString(this.hash),
-                this.getOutputs().toString()
+                TxOutput.arrayToJson(this.getOutputs())
         );
         return new JSONObject(json);
     }

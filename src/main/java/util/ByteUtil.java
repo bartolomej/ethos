@@ -16,6 +16,24 @@ public class ByteUtil {
         return new String(hexChars);
     }
 
+    public static byte[] concat(byte[] array1, byte[] array2) {
+        byte[] concatenated = new byte[array1.length + array2.length];
+        int counter = 0;
+        for (int i = 0; i < concatenated.length; i++) {
+            if (i < array1.length) {
+                concatenated[i] = array1[counter];
+            }
+            if (i == array1.length) {
+                counter = 0;
+            }
+            if (i >= array1.length) {
+                concatenated[i] = array2[counter];
+            }
+            counter++;
+        }
+        return concatenated;
+    }
+
     public static byte[] toByteArray(String hexString) {
         byte[] bytes = new byte[hexString.length()/2];
         for (int i = 0; i < hexString.length(); i += 2) {

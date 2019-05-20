@@ -65,12 +65,23 @@ public class StateManager extends EthosListener {
         return null;
     }
 
-    public StatusReport onStatusReport() {
-        StatusReport report = new StatusReport("StateManager");
-        report.add("blockchain_size", blockchain.getBlockchain().getSize());
+    public ArrayList<StatusReport> onStatusReports() {
+        ArrayList<StatusReport> reports = new ArrayList<>();
+
+        StatusReport blockchainReport = new StatusReport("Blockchain");
+        blockchainReport.add("blockchain_size", blockchain.getBlockchain().getSize());
         if (blockchain.getBestBlock() != null)
-            report.add("best_block", blockchain.getBestBlock().toJson());
-        return report;
+            blockchainReport.add("best_block", blockchain.getBestBlock().toJson());
+
+        StatusReport poolReport = new StatusReport("TxPool");
+        poolReport.add("pool_size", blockchain.getTxPoolSize());
+        if (blockchain.getLastTxInPool() != null)
+            poolReport.add("last_tx", blockchain.getLastTxInPool().toJson());
+
+        reports.add(blockchainReport);
+        reports.add(poolReport);
+
+        return reports;
     }
 
 }

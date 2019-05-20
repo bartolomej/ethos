@@ -1,9 +1,11 @@
 package core.transaction;
 
+import core.block.AbstractBlock;
 import crypto.HashUtil;
 import crypto.KeyUtil;
 import crypto.SigUtil;
 import errors.TransactionException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.InvalidKeyException;
@@ -91,6 +93,7 @@ public abstract class AbstractTransaction {
         return this.outputs;
     }
 
+    // sign transaction to prevent altering content
     public void sign(PrivateKey privateKey) throws InvalidKeyException {
         this.signature = SigUtil.sign(privateKey, this.getHeaderString().getBytes());
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
@@ -112,5 +115,13 @@ public abstract class AbstractTransaction {
 
     public boolean verify() throws SignatureException, InvalidKeyException {
         return SigUtil.verify(this.publicKey, this.signature, this.getHeaderString().getBytes());
+    }
+
+    public static JSONArray arrayToJson(ArrayList<AbstractTransaction> transactions) {
+        JSONArray jsonArray = new JSONArray();
+        for (AbstractTransaction tx : transactions) {
+            jsonArray.put(tx.toJson());
+        }
+        return jsonArray;
     }
 }

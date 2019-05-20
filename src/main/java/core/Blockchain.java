@@ -37,6 +37,14 @@ public class Blockchain {
         }
     }
 
+    public int getTxPoolSize() {
+        return TransactionPool.size();
+    }
+
+    public AbstractTransaction getLastTxInPool() {
+        return TransactionPool.peek();
+    }
+
     public void addExternalBlock() {
         // validate block
         // cancel mining operations
