@@ -5,11 +5,11 @@ public enum MessageTypes {
     PONG, // response to a ping message
     PEERS, // send list of known peers
     GET_PEERS, // requests a list of known peers
-    ERROR, // an error occurred on request
-    INFO, // send monitoring info
     BLOCK, // block received
     TRANSACTION, // tx received
     SYNC,
+    ERROR, // an error occurred on request
+    INFO, // send monitoring info
     OK // request fulfilled
     // TODO: DISCOVERY -> signals that node is synced and ready (peers add nodes address)
 }

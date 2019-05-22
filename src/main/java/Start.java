@@ -14,8 +14,6 @@ public class Start {
     public static void main(String[] args) {
         stateManager = new StateManager();
 
-        EventEmmiter.addListener(stateManager);
-
         startServer();
     }
 
@@ -50,10 +48,5 @@ public class Start {
             new File(Constants.LOG_DIR).mkdir();
         }
     }
-
-    // ON STARTUP
-    // check if stored state valid
-    // sync blockchain
-
 
 }

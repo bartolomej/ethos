@@ -25,32 +25,24 @@ public class TxInput {
      */
     private byte[] signature;
     public long value;
-    private TxOutput prevOutput;
+    private byte[] pubKey;
 
-    public TxInput(byte[] signature, byte[] txHash, TxOutput prevOutput) {
+    /** @Deprecated  */
+    public TxInput(byte[] signature, byte[] prevTxHash, TxOutput prevOutput) {
         this.prevTxHash = prevOutput.getHashValue();
-        this.txHash = txHash;
+        this.prevTxHash = prevTxHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutput.getOutputIndex();
         this.value = prevOutput.getValue();
-        this.prevOutput = prevOutput;
+        this.pubKey = prevOutput.getRecipientPubKey();
     }
 
-    public TxInput(byte[] signature, byte[] txHash, byte[] prevTxHash, TxOutput prevOutput) {
+    public TxInput(byte[] signature, byte[] pubKey, byte[] prevTxHash, int prevOutputIndex, long value) {
         this.prevTxHash = prevTxHash;
-        this.txHash = txHash;
-        this.signature = signature;
-        this.prevOutputIndex = prevOutput.getOutputIndex();
-        this.value = prevOutput.getValue();
-        this.prevOutput = prevOutput;
-    }
-
-    public TxInput(byte[] signature, byte[] txHash, byte[] prevTxHash, int prevOutputIndex, long value) {
-        this.prevTxHash = prevTxHash;
-        this.txHash = txHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutputIndex;
         this.value = value;
+        this.pubKey = pubKey;
     }
 
     public byte[] getPrevOutputHash() {
@@ -72,11 +64,10 @@ public class TxInput {
     public boolean valid() {
         boolean valid;
         try {
-            PublicKey publicKey = KeyUtil.parsePublicKey(this.prevOutput.getRecipientPubKey());
+            PublicKey publicKey = KeyUtil.parsePublicKey(this.pubKey);
             valid = SigUtil.verify(publicKey, this.signature,
                     (ByteUtil.toHexString(prevTxHash) + prevOutputIndex).getBytes());
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
         return valid;
@@ -129,11 +120,6 @@ public class TxInput {
         encoded += "value=" + this.value;
         encoded += "}";
         return encoded;
-    }
-
-    public String toRawStringWithSuffix(String suffix) {
-        return ((this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)) +
-                suffix + this.value + suffix + this.prevOutputIndex);
     }
 
     public static String arrayToString(ArrayList<TxInput> array) {

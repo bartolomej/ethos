@@ -2,7 +2,6 @@ package net;
 
 import com.sun.net.httpserver.*;
 import config.SystemValues;
-import errors.NetworkException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +29,8 @@ public class HTTPServer {
 
     private static void handleRequest(HttpExchange exchange) {
         logRequest(exchange);
-        if (!exchange.getRequestMethod().equals("POST")) invalidHttpMethod(exchange);
+        if (!exchange.getRequestMethod().equals("POST"))
+            sendJsonResponse(exchange,  invalidRequest("Invalid http method"));
 
         InputStream body = exchange.getRequestBody();
 
@@ -39,16 +39,16 @@ public class HTTPServer {
             JSONObject jsonBody = ParseUtil.parseBody(body);
             message = PeerMessage.decode(jsonBody);
         } catch (JSONException e) {
-            invalidDataFormat(exchange, e);
-        } catch (NetworkException e) {
-            unknownException(exchange, e);
+            sendJsonResponse(exchange,  invalidRequest("Invalid data format", e));
+        } catch (Exception e) {
+            sendJsonResponse(exchange, PeerMessage.error(e).encode());
         }
 
         try {
             PeerMessage response = NetService.onRequest(message);
             sendJsonResponse(exchange, response.encode());
         } catch (Exception e) {
-            unknownException(exchange, e);
+            sendJsonResponse(exchange, PeerMessage.error(e).encode());
         }
     }
 
@@ -64,18 +64,15 @@ public class HTTPServer {
         }
     }
 
-    private static void invalidHttpMethod(HttpExchange exchange) {
-        sendJsonResponse(exchange,  MessageGenerators.invalidRequest("Invalid http method"));
+    public static byte[] invalidRequest(String message) {
+        Exception exception = new Exception(message);
+        JSONObject parsedException = ParseUtil.parseException(exception);
+        return new PeerMessage(MessageTypes.ERROR, parsedException).encode();
     }
 
-    private static void invalidDataFormat(HttpExchange exchange, Exception e) {
-        sendJsonResponse(exchange,  MessageGenerators.invalidRequest("Invalid data format", e));
-    }
-
-    private static void unknownException(HttpExchange exchange, Exception e) {
-        JSONObject eBody = new JSONObject();
-        eBody.put("error", ParseUtil.parseException(e));
-        sendJsonResponse(exchange, new PeerMessage(MessageTypes.ERROR, eBody).encode());
+    public static byte[] invalidRequest(String message, Exception e) {
+        JSONObject parsedException = ParseUtil.parseException(e);
+        return new PeerMessage(MessageTypes.ERROR, message, parsedException).encode();
     }
 
     private static void logRequest(HttpExchange exchange) {

@@ -5,12 +5,14 @@ import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
 import crypto.HashUtil;
 import crypto.KeyUtil;
-import errors.BlockException;
+import java.lang.Exception;
+import org.json.JSONObject;
 import util.ByteUtil;
 import util.StringUtil;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GenesisBlock extends AbstractBlock {
@@ -19,18 +21,20 @@ public class GenesisBlock extends AbstractBlock {
     public static int INDEX = 0;
 
     public static GenesisBlock generate() {
-        return GenesisBlock.generateBlock(Constants.START_DIFFICULTY);
+        return GenesisBlock.generate(Constants.START_DIFFICULTY);
     }
 
     public static GenesisBlock generate(int difficulty) {
-        return GenesisBlock.generateBlock(difficulty);
-    }
-
-    private static GenesisBlock generateBlock(int difficulty) {
         KeyUtil keys = KeyUtil.generate();
         PrivateKey privateKey = keys.getPrivateKey();
         PublicKey publicKey = keys.getPublicKey();
         GenesisBlock genesis = new GenesisBlock(publicKey.getEncoded(), difficulty);
+        genesis.computeHash();
+        return genesis;
+    }
+
+    public static GenesisBlock generate(byte[] miner, int difficulty) {
+        GenesisBlock genesis = new GenesisBlock(miner, difficulty);
         genesis.computeHash();
         return genesis;
     }
@@ -48,14 +52,15 @@ public class GenesisBlock extends AbstractBlock {
         );
     }
 
-    public void validate() throws BlockException {
+    public ArrayList<Exception> getAllExceptions() throws Exception {
+        ArrayList<Exception> exceptions = new ArrayList<>();
         if (this.getHash() == null)
-            throw new BlockException("Hash is null");
+            exceptions.add(new Exception("Hash is null"));
         if (this.getTimestamp() > System.currentTimeMillis())
-            throw new BlockException("Timestamp invalid");
-        if (!this.getStringHash()
-                .startsWith(StringUtil.repeat("0", (int)this.getDifficulty())))
-            throw new BlockException("Hash invalid");
+            exceptions.add(new Exception("Timestamp invalid"));
+        if (!this.getStringHash().startsWith(StringUtil.repeat("0", (int)this.getDifficulty())))
+            exceptions.add(new Exception("Hash invalid"));
+        return exceptions;
     }
 
     public void addTransaction(AbstractTransaction tx) {}
@@ -83,5 +88,50 @@ public class GenesisBlock extends AbstractBlock {
         String prevBlockHash = this.getPreviousBlockHash() == null ? "" :
                 ByteUtil.toHexString(this.getPreviousBlockHash());
         return txRootHash + prevBlockHash + this.getNonce() + this.getTimestamp();
+    }
+
+    public String toString() {
+        return this.toStringHeaderWithSuffix("\n");
+    }
+
+    private String toStringHeaderWithSuffix(String suffix) {
+        String encoded = "";
+        encoded += "BlockData {";
+        encoded += "difficulty=" + this.getDifficulty() + suffix;
+        encoded += "index=" + this.getIndex() + suffix;
+        encoded += "timestamp=" + this.timestamp + suffix;
+        encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.toHexString(this.getMiner())) + suffix;
+        encoded += "prev_block=" + null + suffix;
+        encoded += "hash=" + this.getStringHash() + suffix;
+        //encoded += "tx_root=" + ByteUtil.toHexString(this.transactionRootHash) + suffix;
+        encoded += "}";
+        return encoded;
+    }
+
+    public JSONObject toJson() {
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
+                ByteUtil.toHexString(this.hash),
+                this.getDifficulty(),
+                this.getIndex(),
+                this.timestamp,
+                ByteUtil.toHexString(this.getMiner()),
+                null
+                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+        );
+        return new JSONObject(json);
+    }
+
+    public JSONObject toJsonFull() {
+        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
+                ByteUtil.toHexString(this.hash),
+                this.getDifficulty(),
+                this.getIndex(),
+                this.timestamp,
+                ByteUtil.toHexString(this.getMiner()),
+                null,
+                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+                AbstractTransaction.arrayToJson(this.getTransactions())
+        );
+        return new JSONObject(json);
     }
 }

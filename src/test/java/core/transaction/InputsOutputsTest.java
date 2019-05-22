@@ -16,76 +16,61 @@ public class InputsOutputsTest {
 
     @Test
     public void validOutputReference() throws InvalidKeyException {
-        byte[] txHash = new byte[]{0,0,0,0,0,0};
+        byte[] prevTxHash = new byte[]{0,0,0,0,0,0};
         KeyUtil keys = KeyUtil.generate();
         PublicKey publicKey = keys.getPublicKey();
         PrivateKey privateKey = keys.getPrivateKey();
 
         TxOutput txOutput1 = new TxOutput(publicKey.getEncoded(), 10, 0);
 
-        byte[] sig = SigUtil.sign(privateKey, txOutput1.getHashValue());
-        // TODO: deprecated TxInput constructor -> include prevTxHash as param !
-        TxInput txInput1 = new TxInput(sig, txHash, txOutput1);
+        byte[] sig = SigUtil.sign(privateKey,
+                (ByteUtil.toHexString(prevTxHash) + txOutput1.getOutputIndex()).getBytes());
+        TxInput txInput1 = new TxInput(sig, prevTxHash, txOutput1);
 
         assertTrue(txOutput1.valid());
         assertTrue(txInput1.valid());
     }
 
     @Test
-    public void invalidOutputReference() throws InvalidKeyException {
-        byte[] txHash = new byte[]{0,0,0,0,0,0};
-        // first key pair
-        KeyUtil keys1 = KeyUtil.generate();
-        PublicKey publicKey1 = keys1.getPublicKey();
-        PrivateKey privateKey1 = keys1.getPrivateKey();
-        // second key pair
-        KeyUtil keys2 = KeyUtil.generate();
-        PublicKey publicKey2 = keys2.getPublicKey();
-        PrivateKey privateKey2 = keys2.getPrivateKey();
-
-        TxOutput txOutput1 = new TxOutput(publicKey1.getEncoded(), 10, 0);
-
-        byte[] sig = SigUtil.sign(privateKey2, txOutput1.getHashValue());
-        TxInput txInput1 = new TxInput(sig, txHash, txOutput1);
-
-        assertTrue(txOutput1.valid());
-        assertFalse(txInput1.valid());
-    }
-
-    @Test
     public void validInputOutputChain() throws InvalidKeyException {
         // test transaction hash id
         byte[] txHash1 = new byte[]{0,0,0,0,0,0};
-        byte[] txHash2 = new byte[]{0,0,0,0,0,0};
+        byte[] txHash2 = new byte[]{1,1,1,1,1,1};
         // first key pair
         KeyUtil keys1 = KeyUtil.generate();
-        PublicKey publicKey1 = keys1.getPublicKey();
+        PublicKey address1 = keys1.getPublicKey();
         PrivateKey privateKey1 = keys1.getPrivateKey();
         // second key pair
         KeyUtil keys2 = KeyUtil.generate();
-        PublicKey publicKey2 = keys2.getPublicKey();
+        PublicKey address2 = keys2.getPublicKey();
         PrivateKey privateKey2 = keys2.getPrivateKey();
 
-        // first transaction outputs (coinbase transaction)
-        TxOutput txOutput1Tx1 = new TxOutput(publicKey1.getEncoded(), 10, 0);
-        TxOutput txOutput2Tx1 = new TxOutput(publicKey2.getEncoded(), 10, 0);
+        // FIRST TRANSACTION
+        TxOutput txOutput1Tx1 = new TxOutput(address1.getEncoded(), 10, 0); // send 10 to address1
+        TxOutput txOutput2Tx1 = new TxOutput(address2.getEncoded(), 10, 0); // send 10 to address2
 
-        byte[] sigOutput1Tx1 = SigUtil.sign(privateKey1, txOutput1Tx1.getHashValue());
-        byte[] sigOutput2Tx1 = SigUtil.sign(privateKey2, txOutput2Tx1.getHashValue());
+        byte[] sigData1 = (ByteUtil.toHexString(txHash1) + txOutput1Tx1.getOutputIndex()).getBytes();
+        byte[] sigData2 = (ByteUtil.toHexString(txHash1) + txOutput1Tx1.getOutputIndex()).getBytes();
 
-        // second transaction inputs / outputs
-        TxInput txInput1Tx2 = new TxInput(sigOutput1Tx1, txHash1, txOutput1Tx1);
-        TxInput txInput2Tx2 = new TxInput(sigOutput2Tx1, txHash1, txOutput2Tx1);
+        byte[] sigInput1Tx1 = SigUtil.sign(privateKey1, sigData1);
+        byte[] sigInput2Tx1 = SigUtil.sign(privateKey2, sigData2);
 
-        TxOutput txOutput1Tx2 = new TxOutput(publicKey1.getEncoded(), 5, 0);
-        TxOutput txOutput2Tx2 = new TxOutput(publicKey2.getEncoded(), 5, 0);
+        // SECOND TRANSACTION
+        TxInput txInput1Tx2 = new TxInput(sigInput1Tx1, txHash1, txOutput1Tx1);
+        TxInput txInput2Tx2 = new TxInput(sigInput2Tx1, txHash1, txOutput2Tx1);
 
-        byte[] sigOutput1Tx2 = SigUtil.sign(privateKey1, txOutput1Tx1.getHashValue());
-        byte[] sigOutput2Tx2 = SigUtil.sign(privateKey2, txOutput2Tx1.getHashValue());
+        TxOutput txOutput1Tx2 = new TxOutput(address1.getEncoded(), 5, 0); // send 5 to address1
+        TxOutput txOutput2Tx2 = new TxOutput(address2.getEncoded(), 5, 0); // send 5 to address2
 
-        // third transaction inputs / outputs
-        TxInput txInput1Tx3 = new TxInput(sigOutput1Tx2, txHash2, txOutput1Tx1);
-        TxInput txInput2Tx3 = new TxInput(sigOutput2Tx2, txHash2, txOutput2Tx1);
+        byte[] sigData3 =  (ByteUtil.toHexString(txHash2) + txOutput2Tx1.getOutputIndex()).getBytes();
+        byte[] sigData4 = (ByteUtil.toHexString(txHash2) + txOutput2Tx2.getOutputIndex()).getBytes();
+
+        byte[] sigOutput1Tx2 = SigUtil.sign(privateKey1, sigData3);
+        byte[] sigOutput2Tx2 = SigUtil.sign(privateKey2, sigData4);
+
+        // THIRD TRANSACTION
+        TxInput txInput1Tx3 = new TxInput(sigOutput1Tx2, txHash2, txOutput1Tx2);
+        TxInput txInput2Tx3 = new TxInput(sigOutput2Tx2, txHash2, txOutput2Tx2);
 
 
         assertTrue(txOutput1Tx1.valid());

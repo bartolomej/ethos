@@ -47,13 +47,13 @@ public class ObjectParser {
     }
 
     public static TxRootIndex parseTxRootIndex(JSONObject index) {
-        byte[] blockHash = ByteUtil.toByteArray(index.getString("block_hash"));
+        byte[] jsonBlockHash = ByteUtil.toByteArray(index.getString("block_hash"));
         JSONArray jsonArray = index.getJSONArray("transactions");
         byte[][] transactions = new byte[jsonArray.length()][];
         for (int i = 0; i < jsonArray.length(); i++) {
             transactions[i] = ByteUtil.toByteArray(jsonArray.getString(i));
         }
-        return new TxRootIndex(blockHash, transactions);
+        return new TxRootIndex(jsonBlockHash, transactions);
     }
 
     public static Transaction parseJsonTransaction(JSONObject transaction) {
@@ -72,14 +72,14 @@ public class ObjectParser {
         return tx;
     }
 
-    public static Block parseJsonBlock(JSONObject block) {
-        byte[] hash = ByteUtil.toByteArray(block.getString("hash"));
-        byte[] miner = ByteUtil.toByteArray(block.getString("miner"));
-        byte[] txRoot = ByteUtil.toByteArray(block.getString("tx_root"));
-        byte[] prevBlockHash = ByteUtil.toByteArray(block.getString("prev_block_hash"));
-        int difficulty = block.getInt("difficulty");
-        long timestamp = block.getLong("timestamp");
-        int index = block.getInt("index");
+    public static Block parseJsonBlock(JSONObject jsonBlock) {
+        byte[] hash = ByteUtil.toByteArray(jsonBlock.getString("hash"));
+        byte[] miner = ByteUtil.toByteArray(jsonBlock.getString("miner"));
+        byte[] txRoot = ByteUtil.toByteArray(jsonBlock.getString("tx_root"));
+        byte[] prevBlockHash = ByteUtil.toByteArray(jsonBlock.getString("prev_block_hash"));
+        int difficulty = jsonBlock.getInt("difficulty");
+        long timestamp = jsonBlock.getLong("timestamp");
+        int index = jsonBlock.getInt("index");
         return new Block(hash, prevBlockHash, txRoot, miner, timestamp, difficulty, index);
     }
 }

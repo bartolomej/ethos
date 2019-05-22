@@ -1,7 +1,7 @@
 package core.transaction;
 
 import config.Constants;
-import errors.TransactionException;
+import java.lang.Exception;
 import crypto.*;
 import org.json.*;
 import util.ByteUtil;
@@ -40,47 +40,26 @@ public class Transaction extends AbstractTransaction {
         );
     }
 
-    public void validate() throws TransactionException {
+    public ArrayList<Exception> getAllExceptions() {
+        ArrayList<Exception> exceptions = new ArrayList<>();
         if (!this.validTimestamp())
-            throw new TransactionException("Timestamp invalid");
-        if (this.inputs == null)
-            throw new TransactionException("Transaction inputs null");
-        if (this.outputs == null)
-            throw new TransactionException("Transaction outputs null");
+            exceptions.add(new Exception("Timestamp invalid"));
         if (!this.validInputs())
-            throw  new TransactionException("Inputs invalid");
+            exceptions.add(new Exception("Inputs invalid"));
         if (!this.validOutputs())
-            throw new TransactionException("Outputs invalid");
-        if (this.signature == null)
-            throw new TransactionException("Transaction signature missing");
-        if (!this.isSigValid())
-            throw new TransactionException("Transaction signature invalid");
-        if (!this.sufficientInputs())
-            throw new TransactionException("Insufficient inputs", this.getInputsOutputsMessage());
-        if (!this.validFee())
-            throw new TransactionException("Insufficient transaction fee");
-    }
-
-    public ArrayList<TransactionException> getAllExceptions() {
-        ArrayList<TransactionException> exceptions = new ArrayList<>();
-        if (!this.validTimestamp())
-            exceptions.add(new TransactionException("Timestamp invalid"));
-        if (!this.validInputs())
-            exceptions.add(new TransactionException("Inputs invalid"));
-        if (!this.validOutputs())
-            exceptions.add(new TransactionException("Outputs invalid"));
+            exceptions.add(new Exception("Outputs invalid"));
         if (this.inputs == null)
-            exceptions.add(new TransactionException("Transaction inputs null"));
+            exceptions.add(new Exception("Transaction inputs null"));
         if (this.outputs == null)
-            exceptions.add(new TransactionException("Transaction outputs null"));
+            exceptions.add(new Exception("Transaction outputs null"));
         if (this.signature == null)
-            exceptions.add(new TransactionException("Transaction signature missing"));
+            exceptions.add(new Exception("Transaction signature missing"));
         if (!this.isSigValid())
-            exceptions.add(new TransactionException("Transaction signature invalid"));
+            exceptions.add(new Exception("Transaction signature invalid"));
         if (!this.sufficientInputs())
-            exceptions.add(new TransactionException("Insufficient inputs", this.getInputsOutputsMessage()));
+            exceptions.add(new Exception("Insufficient inputs"));
         if (!this.validFee())
-            exceptions.add(new TransactionException("Insufficient transaction fee"));
+            exceptions.add(new Exception("Insufficient transaction fee"));
         return exceptions;
     }
 
@@ -120,7 +99,7 @@ public class Transaction extends AbstractTransaction {
     }
 
     public boolean equals(AbstractTransaction transaction) {
-        if (transaction.getInputs() == null && this.getInputs() != null) return false;
+        if (transaction instanceof CoinbaseTransaction) return false;
         return (
                 Arrays.equals(this.signature, transaction.getSignature()) &
                 this.inputsEquals(transaction.getInputs()) &

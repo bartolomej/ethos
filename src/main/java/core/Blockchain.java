@@ -29,12 +29,12 @@ public class Blockchain {
         chain = new Chain();
     }
 
-    public void addTransaction(AbstractTransaction tx) {
-        if (tx.valid()) {
-            TransactionPool.add(tx);
-        } else {
-            System.out.println("Transaction invalid");
+    public void addTransaction(AbstractTransaction tx) throws Exception {
+        if (TransactionPool.contains(tx.getHash())) return;
+        if (!tx.valid()) {
+            throw new Exception("Transaction invalid");
         }
+        TransactionPool.add(tx);
     }
 
     public int getTxPoolSize() {
@@ -45,9 +45,8 @@ public class Blockchain {
         return TransactionPool.peek();
     }
 
-    public void addExternalBlock() {
-        // validate block
-        // cancel mining operations
+    public void addExternalBlock(Block block) {
+        chain.add(block);
     }
 
     public void createBlock(AbstractBlock parent, List<AbstractTransaction> txs) {

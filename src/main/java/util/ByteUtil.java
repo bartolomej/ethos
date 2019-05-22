@@ -1,10 +1,22 @@
 package util;
 
+import java.util.Base64;
+
 public class ByteUtil {
 
     private static char[] hex = new char[]{
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
+
+    // TODO: replace with base64 encoding
+    public static String encodeToBase64(byte[] input) {
+        byte[] encoded = Base64.getEncoder().encode("Hello".getBytes());
+        return new String(encoded);
+    }
+
+    public static byte[] decodeFromBase64(String input) {
+        return Base64.getDecoder().decode(input.getBytes());
+    }
 
     public static String toHexString(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];

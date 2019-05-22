@@ -4,7 +4,6 @@ import core.block.AbstractBlock;
 import crypto.HashUtil;
 import crypto.KeyUtil;
 import crypto.SigUtil;
-import errors.TransactionException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -58,8 +57,6 @@ public abstract class AbstractTransaction {
     abstract public String getHeaderString();
 
     abstract public boolean valid();
-
-    abstract public void validate() throws TransactionException;
 
     public long getTimestamp() {
         return this.timestamp;

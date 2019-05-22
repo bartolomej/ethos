@@ -1,12 +1,14 @@
 package core.block;
 
 import core.transaction.AbstractTransaction;
+import core.transaction.CoinbaseTransaction;
 import core.transaction.Transaction;
-import errors.BlockException;
 import org.json.JSONObject;
 import util.ByteUtil;
 
 import javax.swing.table.AbstractTableModel;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +59,29 @@ public abstract class AbstractBlock {
 
     abstract public boolean valid();
 
-    abstract public void validate() throws BlockException;
+    abstract public ArrayList<Exception> getAllExceptions() throws Exception;
 
-    abstract public void addTransaction(AbstractTransaction tx);
+    public void addCoinbaseTransaction() {
+        try {
+            this.getTransactions().add(0, CoinbaseTransaction.generate(this.getMiner()));
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+    };
 
-    abstract public void addTransactions(List<AbstractTransaction> txs);
+    public void addTransaction(AbstractTransaction tx) {
+        this.transactions.add(tx);
+    };
+
+    public void addTransactions(List<AbstractTransaction> txs) {
+        this.transactions.addAll(txs);
+    };
+
+    public CoinbaseTransaction getCoinbaseTransaction() {
+        return (CoinbaseTransaction) this.transactions.get(0);
+    }
 
     public ArrayList<AbstractTransaction> getTransactions() {
         return this.transactions;
@@ -108,48 +128,9 @@ public abstract class AbstractBlock {
         return ByteUtil.arraysEqual(block.getHash(), this.previousBlockHash);
     }
 
-    public String toString() {
-        return this.toStringHeaderWithSuffix("\n");
-    }
+    abstract public String toString();
 
-    private String toStringHeaderWithSuffix(String suffix) {
-        String encoded = "";
-        encoded += "BlockData {";
-        encoded += "difficulty=" + this.difficulty + suffix;
-        encoded += "index=" + this.index + suffix;
-        encoded += "timestamp=" + this.timestamp + suffix;
-        encoded += "miner=" + (this.miner == null ? "null" : ByteUtil.toHexString(this.miner)) + suffix;
-        encoded += "prev_block=" + ByteUtil.toHexString(this.previousBlockHash) + suffix;
-        encoded += "hash=" + this.getStringHash() + suffix;
-        encoded += "tx_root=" + ByteUtil.toHexString(this.transactionRootHash) + suffix;
-        encoded += "}";
-        return encoded;
-    }
+    abstract public JSONObject toJson();
 
-    public JSONObject toJson() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
-                ByteUtil.toHexString(this.hash),
-                this.difficulty,
-                this.index,
-                this.timestamp,
-                ByteUtil.toHexString(this.miner),
-                ByteUtil.toHexString(this.previousBlockHash)
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
-        );
-        return new JSONObject(json);
-    }
-
-    public JSONObject toJsonFull() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
-                ByteUtil.toHexString(this.hash),
-                this.difficulty,
-                this.index,
-                this.timestamp,
-                ByteUtil.toHexString(this.miner),
-                ByteUtil.toHexString(this.previousBlockHash),
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
-                AbstractTransaction.arrayToJson(this.transactions)
-        );
-        return new JSONObject(json);
-    }
+    abstract public JSONObject toJsonFull();
 }

@@ -1,44 +1,49 @@
 package core;
 
-import core.block.AbstractBlock;
 import core.block.Block;
 import core.transaction.AbstractTransaction;
 import core.transaction.Transaction;
 import core.transaction.TxRootIndex;
 import db.BlockStore;
 import db.TransactionStore;
-import events.EthosListener;
+import net.MessageTypes;
+import net.PeerMessage;
 import net.PeerNode;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class StateManager extends EthosListener {
+public class StateManager {
 
-    private Blockchain blockchain;
+    private static Blockchain blockchain = new Blockchain();
 
-    public StateManager() {
-        blockchain = new Blockchain();
+    public static void init() {
+        // TODO: initialize blockchain (load from storage)
     }
 
-    public void onTransaction(Transaction tx) {
-        // check if transaction already received
-        System.out.println("Transaction received");
-        blockchain.addTransaction(tx);
+    public static PeerMessage onTransaction(Transaction tx) {
+        // TODO: find out if inputs exist
+        try {
+            blockchain.addTransaction(tx);
+        } catch (Exception e) {
+            return PeerMessage.errors(tx.getAllExceptions());
+        }
+        return PeerMessage.ok();
     }
 
-    public void onBlock(Block block) {
-        // check if block already received
-        System.out.println("Block received");
+    public static PeerMessage onBlock(Block block) {
+        // TODO: find out if block already in chain
+        try {
+            blockchain.addExternalBlock(block);
+        } catch (Exception e) {
+            return PeerMessage.errors(block.getAllExceptions());
+        }
+        return PeerMessage.ok();
     }
 
-    public void onPeerDiscovered(PeerNode node) {
-        System.out.println("Peer discovered");
-        // store peer info
-    }
-
-    public void onBlockRejected(AbstractBlock block) {
-        System.out.println("Block rejected");
-        // propagate to peers ?
+    public static PeerMessage onPeerDiscovered(PeerNode node) {
+        // TODO: store peer info
+        return PeerMessage.ok();
     }
 
     public static void saveBlock(Block block) {
@@ -61,11 +66,7 @@ public class StateManager extends EthosListener {
         return block;
     }
 
-    public static ArrayList<PeerNode> getPeers() {
-        return null;
-    }
-
-    public ArrayList<StatusReport> onStatusReports() {
+    public static PeerMessage onStatusReports() {
         ArrayList<StatusReport> reports = new ArrayList<>();
 
         StatusReport blockchainReport = new StatusReport("Blockchain");
@@ -81,7 +82,9 @@ public class StateManager extends EthosListener {
         reports.add(blockchainReport);
         reports.add(poolReport);
 
-        return reports;
+        JSONObject reportsObject = new JSONObject();
+        reportsObject.put("reports", StatusReport.parseReportsArray(reports));
+        return new PeerMessage(MessageTypes.INFO, reportsObject);
     }
 
 }

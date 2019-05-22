@@ -1,10 +1,12 @@
 package core.transaction;
 
 import crypto.HashUtil;
+import crypto.KeyUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import util.ByteUtil;
 
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,12 +28,10 @@ public class TxOutput {
         this.value = value;
     }
 
-    // TODO: deprecate !
+    /** @deprecated **/
     public byte[] getHashValue() {
-        String pubKey = ByteUtil.toHexString(this.getRecipientPubKey());
         String valueSum = (
-                pubKey +
-                this.getOutputIndex() +
+                this.getOutputIndex() + "" +
                 this.getValue()
         );
         return HashUtil.sha256(valueSum.getBytes());
@@ -50,7 +50,13 @@ public class TxOutput {
     }
 
     public boolean valid() {
-        return this.recipientPubKey != null;
+        try {
+            KeyUtil.parsePublicKey(this.recipientPubKey);
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     public boolean equals(TxOutput output) {

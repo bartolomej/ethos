@@ -2,7 +2,6 @@ package core.transaction;
 
 import crypto.HashUtil;
 import crypto.KeyUtil;
-import errors.TransactionException;
 import org.json.JSONObject;
 import util.ByteUtil;
 
@@ -52,15 +51,15 @@ public class CoinbaseTransaction extends AbstractTransaction {
         return (this.getInputs() == null && this.getOutputs().size() == 1);
     }
 
-    public void validate() throws TransactionException {
+    public ArrayList<Exception> getAllExceptions() {
+        ArrayList<Exception> exceptions = new ArrayList<>();
         if (this.inputs == null)
-            throw new TransactionException("Transaction inputs null");
+            exceptions.add(new Exception("Transaction inputs null"));
         if (this.outputs == null)
-            throw new TransactionException("Transaction outputs null");
+            exceptions.add(new Exception("Transaction outputs null"));
         if (this.signature == null)
-            throw new TransactionException("Transaction signature missing");
-        //if (!this.isSigValid())
-        //    throw new TransactionException("Transaction signature invalid");
+            exceptions.add(new Exception("Signature null"));
+        return exceptions;
     }
 
     public boolean equals(AbstractTransaction transaction) {

@@ -47,24 +47,24 @@ public class FirstTestProcess {
         // generate global chain state
         Chain chain = new Chain();
 
-        // generate genesis block with initial coinbase tx
-        CoinbaseTransaction genesisTx = CoinbaseTransaction.generate(address1.getEncoded());
-        assertTrue(genesisTx.valid());
-
-        GenesisBlock genesisBlock = GenesisBlock.generate(3);
-        genesisBlock.addTransaction(genesisTx);
-        mineBlock(genesisBlock);
-        assertTrue(genesisBlock.valid());
+        GenesisBlock genesisBlock = GenesisBlock.generate(address1.getEncoded(), 3);
+        while (!genesisBlock.valid()) {
+            genesisBlock.computeHash();
+        }
+        genesisBlock.addCoinbaseTransaction();
         chain.add(genesisBlock);
+
+        assertTrue(genesisBlock.valid());
+        assertTrue(genesisBlock.getCoinbaseTransaction().valid());
 
         CoinbaseTransaction coinbaseTx1 = CoinbaseTransaction.generate(address1.getEncoded());
         assertTrue(coinbaseTx1.valid());
 
         ArrayList<TxInput> inputsTx1 = new ArrayList<>();
         // sign prev transaction output content
-        byte[] sig = SigUtil.sign(privateKey1,
-                (ByteUtil.toHexString(coinbaseTx1.getHash()) + coinbaseTx1.getOutput().getOutputIndex()).getBytes());
-        inputsTx1.add(new TxInput(sig, coinbaseTx1.getHash(), coinbaseTx1.getHash(), coinbaseTx1.getOutput()));
+        byte[] sigData = (ByteUtil.toHexString(coinbaseTx1.getHash()) + coinbaseTx1.getOutput().getOutputIndex()).getBytes();
+        byte[] sig = SigUtil.sign(privateKey1, sigData);
+        inputsTx1.add(new TxInput(sig, coinbaseTx1.getHash(), coinbaseTx1.getOutput()));
         ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
         outputsTx1.add(new TxOutput(address2.getEncoded(), 10, 0)); // address1 balance: 100 (BLOCK_REWARD) - 10 - 10
 
@@ -77,15 +77,14 @@ public class FirstTestProcess {
 
         Block block1 = new Block(genesisBlock.getHash(), address1.getEncoded(), 3, 1);
         block1.addTransaction(tx1);
-        mineBlock(block1);
+        while (!block1.valid()) {
+            block1.computeHash();
+        }
+        block1.addCoinbaseTransaction();
         assertTrue(block1.valid());
 
-        // TODO: do a state calculation
-    }
+        chain.add(block1);
 
-    private void mineBlock(AbstractBlock block) {
-        while (!block.valid()) {
-            block.computeHash();
-        }
+        assertEquals(chain.getSize(), 2);
     }
 }
