@@ -84,9 +84,9 @@ public class GenesisBlock extends AbstractBlock {
 
     private String getHeaderString() {
         String txRootHash = this.getTransactionsRootHash() == null ? "" :
-                ByteUtil.toHexString(this.getTransactionsRootHash());
+                ByteUtil.encodeToBase64(this.getTransactionsRootHash());
         String prevBlockHash = this.getPreviousBlockHash() == null ? "" :
-                ByteUtil.toHexString(this.getPreviousBlockHash());
+                ByteUtil.encodeToBase64(this.getPreviousBlockHash());
         return txRootHash + prevBlockHash + this.getNonce() + this.getTimestamp();
     }
 
@@ -100,36 +100,36 @@ public class GenesisBlock extends AbstractBlock {
         encoded += "difficulty=" + this.getDifficulty() + suffix;
         encoded += "index=" + this.getIndex() + suffix;
         encoded += "timestamp=" + this.timestamp + suffix;
-        encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.toHexString(this.getMiner())) + suffix;
+        encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.encodeToBase64(this.getMiner())) + suffix;
         encoded += "prev_block=" + null + suffix;
         encoded += "hash=" + this.getStringHash() + suffix;
-        //encoded += "tx_root=" + ByteUtil.toHexString(this.transactionRootHash) + suffix;
+        //encoded += "tx_root=" + ByteUtil.encodeToBase64(this.transactionRootHash) + suffix;
         encoded += "}";
         return encoded;
     }
 
     public JSONObject toJson() {
         String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
-                ByteUtil.toHexString(this.hash),
+                ByteUtil.encodeToBase64(this.hash),
                 this.getDifficulty(),
                 this.getIndex(),
                 this.timestamp,
-                ByteUtil.toHexString(this.getMiner()),
+                ByteUtil.encodeToBase64(this.getMiner()),
                 null
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+                //ByteUtil.encodeToBase64(this.transactionRootHash) TODO: add txRoot
         );
         return new JSONObject(json);
     }
 
     public JSONObject toJsonFull() {
         String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
-                ByteUtil.toHexString(this.hash),
+                ByteUtil.encodeToBase64(this.hash),
                 this.getDifficulty(),
                 this.getIndex(),
                 this.timestamp,
-                ByteUtil.toHexString(this.getMiner()),
+                ByteUtil.encodeToBase64(this.getMiner()),
                 null,
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
+                //ByteUtil.encodeToBase64(this.transactionRootHash) TODO: add txRoot
                 AbstractTransaction.arrayToJson(this.getTransactions())
         );
         return new JSONObject(json);

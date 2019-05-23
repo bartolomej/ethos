@@ -13,8 +13,8 @@ import static org.junit.Assert.*;
 public class BlockStoreTest {
 
     @Test
-    public void saveBlock() {
-        Block block = HelperGenerator.generateTestEmptyBlock();
+    public void saveBlock() throws Exception {
+        Block block = new HelperGenerator().getBlock();
 
         BlockStore.save(block.getHash(), block.toJson());
         Block storedBlock = BlockStore.getByHash(block.getHash());

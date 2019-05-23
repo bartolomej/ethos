@@ -112,7 +112,8 @@ public abstract class AbstractBlock {
     }
 
     public byte[] getTransactionsRootHash() {
-        return this.transactionRootHash;
+        return new byte[]{0,0,0,0,0}; // TODO: for debugging purposes
+        //return this.transactionRootHash;
     }
 
     public String getStringHash() {

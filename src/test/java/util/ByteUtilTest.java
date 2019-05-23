@@ -3,12 +3,24 @@ package util;
 import crypto.KeyUtil;
 import org.junit.Test;
 
+import java.security.Key;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import static org.junit.Assert.*;
 
 public class ByteUtilTest {
+
+    @Test
+    public void encodePubKeyToBase64() {
+        KeyUtil keyUtil = KeyUtil.generate();
+        byte[] pubKey = keyUtil.getPublicKey().getEncoded();
+
+        String encoded = ByteUtil.encodeToBase64(pubKey);
+        byte[] decoded = ByteUtil.decodeFromBase64(encoded);
+
+        assertArrayEquals(pubKey, decoded);
+    }
 
     @Test
     public void concat1() {

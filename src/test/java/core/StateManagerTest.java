@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class StateManagerTest {
 
     @Test
-    public void storeWholeBlock() throws InvalidKeySpecException {
+    public void storeWholeBlock() throws Exception {
         KeyUtil keys1 = KeyUtil.generate();
         PublicKey pubKey1 = keys1.getPublicKey();
 

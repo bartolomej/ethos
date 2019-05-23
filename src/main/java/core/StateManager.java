@@ -52,11 +52,11 @@ public class StateManager {
         BlockStore.save(block.getHash(), block.toJson());
         TransactionStore.saveTxRootIndex(txRootIndex.getBlockHash(), txRootIndex.toJson());
         for (AbstractTransaction tx : block.getTransactions()) {
-            TransactionStore.save(tx.getHash(), tx.toJson());
+            TransactionStore.saveTx(tx.getHash(), tx.toJson());
         }
     }
 
-    public static Block getBlock(byte[] hash) {
+    public static Block getBlock(byte[] hash) throws Exception {
         Block block = BlockStore.getByHash(hash);
         TxRootIndex txRootIndex = TransactionStore.getTxRoot(hash);
         byte[][] txHashes = txRootIndex.getTxHashes();

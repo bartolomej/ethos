@@ -26,11 +26,10 @@ public class ObjectsJsonSerialization {
         TxInput input = new TxInput(sig, txHash, output);
 
         JSONObject expected = new JSONObject();
-        expected.put("sig", ByteUtil.toHexString(sig));
+        expected.put("sig", ByteUtil.encodeToBase64(sig));
         expected.put("output_index", index);
-        expected.put("tx_hash", ByteUtil.toHexString(txHash));
         expected.put("value", value);
-        expected.put("prev_output_hash", ByteUtil.toHexString(output.getHashValue()));
+        expected.put("prev_tx", ByteUtil.encodeToBase64(txHash));
 
         assertEquals(expected.toString(), input.toJson().toString());
     };
@@ -44,9 +43,10 @@ public class ObjectsJsonSerialization {
 
         TxOutput output = new TxOutput(recipientAddress, value, index);
 
-        JSONObject expected = new JSONObject(String.format("{recipient_pub_key: %s, output_index: %s, value: %s}",
-                ByteUtil.toHexString(recipientAddress), index, value
-        ));
+        JSONObject expected = new JSONObject();
+        expected.put("address", ByteUtil.encodeToBase64(recipientAddress));
+        expected.put("index", index);
+        expected.put("value", value);
 
         assertEquals(expected.toString(), output.toJson().toString());
     };
@@ -69,17 +69,17 @@ public class ObjectsJsonSerialization {
 
     @Test
     public void serializeTransaction() throws InvalidKeySpecException, InvalidKeyException {
-        Transaction tx = HelperGenerator.generateTestValidTransaction();
+        Transaction tx = new HelperGenerator().getTransaction();
 
         JSONObject expected = new JSONObject();
-        expected.put("outputs", TxOutput.arrayToJson(tx.getOutputs()));
-        expected.put("inputs", TxInput.arrayToJson(tx.getInputs()));
-        expected.put("signature", ByteUtil.toHexString(tx.getSignature()));
-        expected.put("hash", ByteUtil.toHexString(tx.getHash()));
         expected.put("timestamp", tx.getTimestamp());
-        expected.put("pub_key", ByteUtil.toHexString(tx.getPublicKey().getEncoded()));
+        expected.put("hash", ByteUtil.encodeToBase64(tx.getHash()));
+        expected.put("address", ByteUtil.encodeToBase64(tx.getPublicKey().getEncoded()));
+        expected.put("signature", ByteUtil.encodeToBase64(tx.getSignature()));
+        expected.put("inputs", TxInput.arrayToJson(tx.getInputs()));
+        expected.put("outputs", TxOutput.arrayToJson(tx.getOutputs()));
 
-        assertEquals(tx.toJson().toString(), expected.toString());
+        assertEquals(expected.toString(), tx.toJson().toString());
     };
 
     @Test
@@ -96,11 +96,11 @@ public class ObjectsJsonSerialization {
 
         JSONObject jsonBlock = new JSONObject();
         jsonBlock.put("difficulty", difficulty);
-        jsonBlock.put("prev_block_hash", ByteUtil.toHexString(prevBlockHash));
-        jsonBlock.put("tx_root", ByteUtil.toHexString(txRoot));
+        jsonBlock.put("prev_block", ByteUtil.encodeToBase64(prevBlockHash));
+        jsonBlock.put("tx_root", ByteUtil.encodeToBase64(txRoot));
         jsonBlock.put("index", index);
-        jsonBlock.put("hash", ByteUtil.toHexString(hash));
-        jsonBlock.put("miner", ByteUtil.toHexString(miner));
+        jsonBlock.put("hash", ByteUtil.encodeToBase64(hash));
+        jsonBlock.put("miner", ByteUtil.encodeToBase64(miner));
         jsonBlock.put("timestamp", timestamp);
 
         assertEquals(jsonBlock.toString(), block.toJson().toString());

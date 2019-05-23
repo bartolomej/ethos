@@ -18,12 +18,12 @@ public class TxOutput {
      * This lets the pubKey script verify that Bob owns the private key which created the public key.
      */
 
-    private byte[] recipientPubKey;
+    private byte[] recipientAddress;
     private long value;
     private int outputIndex;
 
-    public TxOutput(byte[] recipientPubKey, long value, int outputIndex) {
-        this.recipientPubKey = recipientPubKey;
+    public TxOutput(byte[] recipientAddress, long value, int outputIndex) {
+        this.recipientAddress = recipientAddress;
         this.outputIndex = outputIndex;
         this.value = value;
     }
@@ -38,7 +38,7 @@ public class TxOutput {
     }
 
     public byte[] getRecipientPubKey() {
-        return this.recipientPubKey;
+        return this.recipientAddress;
     }
 
     public int getOutputIndex() {
@@ -51,7 +51,7 @@ public class TxOutput {
 
     public boolean valid() {
         try {
-            KeyUtil.parsePublicKey(this.recipientPubKey);
+            KeyUtil.parsePublicKey(this.recipientAddress);
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
             return false;
@@ -60,7 +60,7 @@ public class TxOutput {
     }
 
     public boolean equals(TxOutput output) {
-        return Arrays.equals(this.recipientPubKey, output.recipientPubKey) & this.value == output.value;
+        return Arrays.equals(this.recipientAddress, output.recipientAddress) & this.value == output.value;
     }
 
     public static long sum(ArrayList<TxOutput> inputs) {
@@ -80,10 +80,11 @@ public class TxOutput {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{recipient_pub_key: %s, output_index: %s, value: %s}",
-                ByteUtil.toHexString(this.recipientPubKey), this.outputIndex, this.value
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("address", ByteUtil.encodeToBase64(this.recipientAddress));
+        jsonObject.put("index", this.outputIndex);
+        jsonObject.put("value", this.value);
+        return jsonObject;
     }
 
     @Override
@@ -93,15 +94,15 @@ public class TxOutput {
 
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxOutputData {";
-        encoded += "recipient_pub_key=" + ByteUtil.toHexString(this.recipientPubKey) + suffix;
-        encoded += "output_index=" + this.outputIndex + suffix;
+        encoded += "address=" + ByteUtil.encodeToBase64(this.recipientAddress) + suffix;
+        encoded += "index=" + this.outputIndex + suffix;
         encoded += "value=" + this.value;
         encoded += "}";
         return encoded;
     }
 
     public String toRawStringWithSuffix(String suffix) {
-        return (ByteUtil.toHexString(this.recipientPubKey) + suffix + this.value);
+        return (ByteUtil.encodeToBase64(this.recipientAddress) + suffix + this.value);
     }
 
     public static String arrayToString(ArrayList<TxOutput> array) {

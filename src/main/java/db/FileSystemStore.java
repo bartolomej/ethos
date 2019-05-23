@@ -8,8 +8,9 @@ import java.io.IOException;
 public class FileSystemStore {
 
     public static void store(String filepath, String content) {
+        File file = new File(filepath);
         try {
-            FileWriter fileWriter = new FileWriter(filepath);
+            FileWriter fileWriter = new FileWriter(file);
             fileWriter.write(content);
             fileWriter.close();
         } catch (IOException e) {
@@ -19,8 +20,10 @@ public class FileSystemStore {
 
     public static String read(String filepath) {
         String input = "";
+        File file = new File(filepath);
+        if (!file.exists()) return null;
         try {
-            FileReader fileReader = new FileReader(filepath);
+            FileReader fileReader = new FileReader(file);
             while (fileReader.ready()) {
                 input += (char)fileReader.read();
             }
@@ -32,6 +35,7 @@ public class FileSystemStore {
 
     public static void makeDirectory(String path) {
         File fs = new File(path);
+        if (fs.exists()) return;
         if (fs.mkdir()) {
             System.out.println("Directory created");
         } else {

@@ -14,13 +14,14 @@ import java.util.List;
 public class Block extends AbstractBlock {
 
     public Block(byte[] hash,
-                         byte[] previousBlockHash,
-                         byte[] txRoot,
-                         byte[] miner,
-                         long timestamp,
-                         int difficulty,
-                         int index) {
-        super(hash, previousBlockHash, txRoot, miner, timestamp, difficulty, index);
+                 byte[] previousBlockHash,
+                 byte[] txRootHash,
+                 byte[] miner,
+                 long timestamp,
+                 int difficulty,
+                 int index) {
+        super(hash, previousBlockHash, txRootHash, miner, timestamp, difficulty, index);
+        // TODO: validate txRootHash
     }
 
     public Block(byte[] hash, byte[] previousBlockHash, byte[] miner, int difficulty, int index) {
@@ -45,7 +46,7 @@ public class Block extends AbstractBlock {
 
     public boolean valid(byte[] prevBlockHash) {
         return this.validTimestamp() & this.prevHashMatches(prevBlockHash) & this.validHash();
-        // TODO: transaction verification (merkle root)
+        // TODO: transaction verification (merkle root) -> validate txRootHash
     }
 
     public boolean valid() {
@@ -93,9 +94,9 @@ public class Block extends AbstractBlock {
 
     private String getHeaderString() {
         String txRootHash = this.getTransactionsRootHash() == null ? "" :
-                ByteUtil.toHexString(this.getTransactionsRootHash());
+                ByteUtil.encodeToBase64(this.getTransactionsRootHash());
         String prevBlockHash = this.getPreviousBlockHash() == null ? "" :
-                ByteUtil.toHexString(this.getPreviousBlockHash());
+                ByteUtil.encodeToBase64(this.getPreviousBlockHash());
         return txRootHash + prevBlockHash + this.nonce + this.getTimestamp();
     }
 
@@ -108,39 +109,37 @@ public class Block extends AbstractBlock {
         encoded += "BlockData {";
         encoded += "difficulty=" + this.getDifficulty() + suffix;
         encoded += "index=" + this.getIndex() + suffix;
-        encoded += "timestamp=" + this.timestamp + suffix;
-        encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.toHexString(this.getMiner())) + suffix;
-        encoded += "prev_block=" + ByteUtil.toHexString(this.getPreviousBlockHash()) + suffix;
+        encoded += "timestamp=" + this.getTimestamp() + suffix;
+        encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.encodeToBase64(this.getMiner())) + suffix;
+        encoded += "prev_block=" + ByteUtil.encodeToBase64(this.getPreviousBlockHash()) + suffix;
         encoded += "hash=" + this.getStringHash() + suffix;
-        //encoded += "tx_root=" + ByteUtil.toHexString(this.getTransactionsRootHash()) + suffix;
+        encoded += "tx_root=" + ByteUtil.encodeToBase64(this.getTransactionsRootHash()) + suffix;
         encoded += "}";
         return encoded;
     }
 
     public JSONObject toJson() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
-                ByteUtil.toHexString(this.hash),
-                this.getDifficulty(),
-                this.getIndex(),
-                this.timestamp,
-                ByteUtil.toHexString(this.getMiner()),
-                ByteUtil.toHexString(this.getPreviousBlockHash())
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("hash", ByteUtil.encodeToBase64(this.getHash()));
+        jsonObject.put("difficulty", this.getDifficulty());
+        jsonObject.put("index", this.getIndex());
+        jsonObject.put("timestamp", this.getTimestamp());
+        jsonObject.put("miner", ByteUtil.encodeToBase64(this.getMiner()));
+        jsonObject.put("prev_block", ByteUtil.encodeToBase64(this.getPreviousBlockHash()));
+        jsonObject.put("tx_root", ByteUtil.encodeToBase64(this.getTransactionsRootHash()));
+        return jsonObject;
     }
 
     public JSONObject toJsonFull() {
-        String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
-                ByteUtil.toHexString(this.hash),
-                this.getDifficulty(),
-                this.getIndex(),
-                this.timestamp,
-                ByteUtil.toHexString(this.getMiner()),
-                ByteUtil.toHexString(this.getPreviousBlockHash()),
-                //ByteUtil.toHexString(this.transactionRootHash) TODO: add txRoot
-                AbstractTransaction.arrayToJson(this.getTransactions())
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("hash", ByteUtil.encodeToBase64(this.hash));
+        jsonObject.put("difficulty", this.getDifficulty());
+        jsonObject.put("index", this.getIndex());
+        jsonObject.put("timestamp", this.getTimestamp());
+        jsonObject.put("miner", ByteUtil.encodeToBase64(this.getMiner()));
+        jsonObject.put("prev_block", ByteUtil.encodeToBase64(this.getPreviousBlockHash()));
+        jsonObject.put("tx_root", ByteUtil.encodeToBase64(this.getTransactionsRootHash()));
+        jsonObject.put("tx", AbstractTransaction.arrayToJson(this.getTransactions()));
+        return jsonObject;
     }
 }

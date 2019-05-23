@@ -94,7 +94,7 @@ public class Transaction extends AbstractTransaction {
                 this.timestamp +
                 this.outputs.toString() +
                 this.inputs.toString() +
-                ByteUtil.toHexString(publicKey.getEncoded())
+                ByteUtil.encodeToBase64(publicKey.getEncoded())
         );
     }
 
@@ -156,8 +156,8 @@ public class Transaction extends AbstractTransaction {
 
     public String toStringWithSuffix(String suffix) {
         String encoded = "TransactionData {";
-        encoded += "hash=" + ByteUtil.toHexString(this.hash) + suffix;
-        encoded += "sig=" + ByteUtil.toHexString(this.signature) + suffix;
+        encoded += "hash=" + ByteUtil.encodeToBase64(this.hash) + suffix;
+        encoded += "sig=" + ByteUtil.encodeToBase64(this.signature) + suffix;
         encoded += "timestamp=" + this.timestamp + suffix;
         encoded += "inputs=" + TxInput.arrayToStringWithSuffix(this.inputs, " ") + suffix;
         encoded += "outputs=" + TxOutput.arrayToStringWithSuffix(this.outputs, " ");
@@ -166,15 +166,14 @@ public class Transaction extends AbstractTransaction {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{timestamp: %s, hash: %s, pub_key: %s, signature: %s, inputs: %s, outputs: %s}",
-                this.timestamp,
-                ByteUtil.toHexString(this.hash),
-                ByteUtil.toHexString(this.publicKey.getEncoded()),
-                ByteUtil.toHexString(this.signature),
-                TxInput.arrayToJson(this.inputs),
-                TxOutput.arrayToJson(this.outputs)
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("timestamp", this.timestamp);
+        jsonObject.put("hash", ByteUtil.encodeToBase64(this.hash));
+        jsonObject.put("address", ByteUtil.encodeToBase64(this.getPublicKey().getEncoded()));
+        jsonObject.put("signature", ByteUtil.encodeToBase64(this.signature));
+        jsonObject.put("inputs", TxInput.arrayToJson(this.inputs));
+        jsonObject.put("outputs", TxOutput.arrayToJson(this.outputs));
+        return jsonObject;
     }
 
 }

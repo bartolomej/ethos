@@ -14,7 +14,7 @@ public class TransactionPoolTest {
 
     @Test
     public void addTransactionToPool() throws InvalidKeySpecException, InvalidKeyException {
-        Transaction tx1 = HelperGenerator.generateTestValidTransaction();
+        Transaction tx1 = new HelperGenerator().getTransaction();
 
         TransactionPool.add(tx1);
 
@@ -37,7 +37,10 @@ public class TransactionPoolTest {
 
     @Test
     public void addTwoTransactionsToPool() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> transactions = HelperGenerator.generateTwoTransactionArrayWithGenesis();
+        HelperGenerator generator = new HelperGenerator();
+        ArrayList<AbstractTransaction> transactions = new ArrayList<>();
+        transactions.add(generator.getCoinbaseTransaction());
+        transactions.add(generator.getTransaction());
 
         TransactionPool.add(transactions.get(0));
         TransactionPool.add(transactions.get(1));

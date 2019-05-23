@@ -2,9 +2,14 @@ package core;
 
 import config.Constants;
 import core.block.Block;
+import core.block.GenesisBlock;
 import core.transaction.*;
+import crypto.HashUtil;
 import crypto.KeyUtil;
+import crypto.SigUtil;
+import db.DbFacade;
 import org.junit.Test;
+import util.ByteUtil;
 
 import java.io.File;
 import java.security.InvalidKeyException;
@@ -17,116 +22,97 @@ import static org.junit.Assert.*;
 
 public class HelperGenerator {
 
-    // first account
-    static KeyUtil keys = KeyUtil.generate();
-    static PrivateKey privateKey = keys.getPrivateKey();
-    static PublicKey publicKey = keys.getPublicKey();
-    static byte[] address = publicKey.getEncoded();
+    Chain chain;
+    Block block;
+    CoinbaseTransaction coinbaseTransaction;
+    Transaction transaction;
+    ArrayList<TxOutput> coinbaseOutputs;
+    ArrayList<TxInput> inputsTx1;
+    ArrayList<TxOutput> outputsTx1;
 
-    public static long OUTPUT_VALUE = 10;
-    public static long INPUT_VALUE = 100;
+    private PrivateKey privateKey1;
+    private PublicKey address1;
+    private PrivateKey privateKey2;
+    private PublicKey address2;
+
+    public HelperGenerator() throws InvalidKeySpecException, InvalidKeyException {
+        KeyUtil keyPairAccount1 = KeyUtil.generate();
+        privateKey1 = keyPairAccount1.getPrivateKey();
+        address1 = keyPairAccount1.getPublicKey();
+        KeyUtil keyPairAccount2 = KeyUtil.generate();
+        privateKey2 = keyPairAccount2.getPrivateKey();
+        address2 = keyPairAccount2.getPublicKey();
+
+        this.chain = new Chain();
+
+        this.init();
+    }
 
     public static void generateDbFolderStructure() {
-        if (!new File(Constants.DB_DIR).exists()) {
-            new File(Constants.DB_DIR).mkdir();
-        }
-        if (!new File(Constants.ACCOUNT_STORE_DIR).exists()) {
-            new File(Constants.ACCOUNT_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.BLOCK_STORE_DIR).exists()) {
-            new File(Constants.BLOCK_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.TX_STORE_DIR).exists()) {
-            new File(Constants.TX_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.PEERS_STORE_DIR).exists()) {
-            new File(Constants.PEERS_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.INDEX_STORE_DIR).exists()) {
-            new File(Constants.INDEX_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.LOG_DIR).exists()) {
-            new File(Constants.LOG_DIR).mkdir();
-        }
+        DbFacade.init();
     }
 
-    public static Transaction generateTestValidTransaction() throws InvalidKeySpecException, InvalidKeyException {
+    public ArrayList<TxOutput> getCoinbaseOutputs() {
+        return this.coinbaseOutputs;
+    }
 
-        // coinbase transaction
-        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(HelperGenerator.address);
+    public ArrayList<TxInput> getInputsTx1() {
+        return this.inputsTx1;
+    }
 
-        // input-outputs for tx1
-        ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
-        ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
-        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
+    public ArrayList<TxOutput> getOutputsTx1() {
+        return this.outputsTx1;
+    }
 
-        // first transaction
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, HelperGenerator.publicKey);
-        try {
-            tx1.sign(HelperGenerator.privateKey);
-        } catch (InvalidKeyException e) {
-            assertNull(e);
+    public CoinbaseTransaction getCoinbaseTransaction() {
+        return this.coinbaseTransaction;
+    }
+
+    public Transaction getTransaction() {
+        return this.transaction;
+    }
+
+    public Block getBlock() {
+        return this.block;
+    }
+
+    public Chain getChain() {
+        return this.chain;
+    }
+
+    public void init() throws InvalidKeySpecException, InvalidKeyException {
+        GenesisBlock genesisBlock = GenesisBlock.generate(address1.getEncoded(), 3);
+        while (!genesisBlock.valid()) {
+            genesisBlock.computeHash();
         }
-        return tx1;
-    }
+        genesisBlock.addCoinbaseTransaction();
+        this.chain.add(genesisBlock);
 
-    public static ArrayList<AbstractTransaction> generateTwoTransactionArrayWithGenesis() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> transactions = new ArrayList<>();
+        this.coinbaseTransaction = CoinbaseTransaction.generate(address1.getEncoded());
 
-        // coinbase transaction
-        CoinbaseTransaction coinbaseTx = CoinbaseTransaction.generate(HelperGenerator.address);
+        this.inputsTx1 = new ArrayList<>();
 
-        // input-outputs for tx1
-        ArrayList<TxInput> inputsTx1 = new ArrayList<>();
-        //inputsTx1.add(new TxInput(coinbaseTx.getOutput()));
-        ArrayList<TxOutput> outputsTx1 = new ArrayList<>();
-        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 0)); // sending some to other address
-        //outputsTx1.add(new TxOutput(HelperGenerator.address, HelperGenerator.OUTPUT_VALUE, 1)); // sending rest back to itself -> include fee
+        byte[] sigData = (ByteUtil.toHexString(coinbaseTransaction.getHash()) + coinbaseTransaction.getOutput().getOutputIndex()).getBytes();
+        byte[] sig = SigUtil.sign(privateKey1, sigData);
 
-        // first transaction
-        Transaction tx1 = new Transaction(inputsTx1, outputsTx1, HelperGenerator.publicKey);
-        try {
-            tx1.sign(HelperGenerator.privateKey);
-        } catch (InvalidKeyException e) {
-            assertNull(e);
+        this.inputsTx1.add(new TxInput(sig, coinbaseTransaction.getHash(), coinbaseTransaction.getOutput()));
+        this.outputsTx1 = new ArrayList<>();
+        this.outputsTx1.add(new TxOutput(address2.getEncoded(), 10, 0)); // address1 balance: 100 (BLOCK_REWARD) - 10 - 10
+
+        long timestamp = System.currentTimeMillis();
+        String txHeaderData = timestamp + outputsTx1.toString() + inputsTx1.toString() + ByteUtil.toHexString(address1.getEncoded());
+        byte[] tx1Signature = SigUtil.sign(privateKey1, txHeaderData.getBytes());
+        byte[] tx1Hash = HashUtil.sha256(txHeaderData.getBytes());
+
+        this.transaction = new Transaction(inputsTx1, outputsTx1, address1.getEncoded(), tx1Signature, tx1Hash, timestamp);
+
+        this.block = new Block(genesisBlock.getHash(), address1.getEncoded(), 3, 1);
+        this.block.addTransaction(this.transaction);
+        while (!block.valid()) {
+            block.computeHash();
         }
+        this.block.addCoinbaseTransaction();
 
-        transactions.add(coinbaseTx);
-        transactions.add(tx1);
-
-        return transactions;
-    }
-
-    public static Block generateTestEmptyBlock() {
-        return new Block(
-                new byte[]{1,1,1,1,1,1,1},
-                new byte[]{0,0,0,0,0,0,0},
-                new byte[]{0,0,0,0,0,0},
-                new byte[]{0,0,0},
-                System.currentTimeMillis(), 5, 1);
-    }
-
-    public static Block generateValidFullBlock() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> tx = generateTwoTransactionArrayWithGenesis();
-        // TODO generate block
-        return null;
-    }
-
-    @Test
-    public void testTransactionGeneration() throws InvalidKeySpecException, InvalidKeyException {
-        Transaction tx = generateTestValidTransaction();
-
-        assertTrue(tx.valid());
-    }
-
-    @Test
-    public void testTwoArrayTransactionsGeneration() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> transactions = generateTwoTransactionArrayWithGenesis();
-
-        for (AbstractTransaction tx : transactions) {
-            assertTrue(tx.valid());
-        }
+        this.chain.add(block);
     }
 }

@@ -24,6 +24,22 @@ public class HashUtilTest {
     }
 
     @Test
+    public void byteArrayToBase64() {
+        byte[] byteArray = new byte[]{100,120,3};
+        String hexString = ByteUtil.encodeToBase64(byteArray);
+        assertArrayEquals(byteArray, ByteUtil.decodeFromBase64(hexString));
+    }
+
+    @Test
+    public void encodePubKeyToBase64() {
+        KeyUtil keyUtil = KeyUtil.generate();
+        byte[] pubKey = keyUtil.getPublicKey().getEncoded();
+        String encoded = ByteUtil.encodeToBase64(pubKey);
+        byte[] decoded = ByteUtil.decodeFromBase64(encoded);
+        assertArrayEquals(decoded, pubKey);
+    }
+
+    @Test
     public void sha256HashTest() {
         byte[] hash = HashUtil.sha256("testMSG".getBytes());
         assertEquals(32, hash.length);

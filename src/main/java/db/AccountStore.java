@@ -8,12 +8,13 @@ import org.json.JSONObject;
 
 import config.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class AccountStore {
 
-    public static void saveAccount(JSONObject account) {
+    public static void saveAccount(byte[] address, JSONObject account) {
         try {
             String filename = "keystore" + System.currentTimeMillis() + ".json";
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -27,7 +28,5 @@ public class AccountStore {
             e.printStackTrace();
         }
     }
-
-    // TODO: add getters etc.
 
 }

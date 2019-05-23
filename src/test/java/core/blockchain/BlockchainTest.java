@@ -16,8 +16,11 @@ import static org.junit.Assert.*;
 public class BlockchainTest {
 
     @Test
-    public void addTransactionsInOneBlock() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> tx = HelperGenerator.generateTwoTransactionArrayWithGenesis();
+    public void addTransactionsInOneBlock() throws Exception {
+        HelperGenerator generator = new HelperGenerator();
+        ArrayList<AbstractTransaction> tx = new ArrayList<>();
+        tx.add(generator.getCoinbaseTransaction());
+        tx.add(generator.getTransaction());
 
         Blockchain blockchain = new Blockchain();
         blockchain.addTransaction(tx.get(0));
@@ -32,8 +35,11 @@ public class BlockchainTest {
     }
 
     @Test
-    public void addTransactionsInTwoBlocks() throws InvalidKeySpecException, InvalidKeyException {
-        ArrayList<AbstractTransaction> tx = HelperGenerator.generateTwoTransactionArrayWithGenesis();
+    public void addTransactionsInTwoBlocks() throws Exception {
+        HelperGenerator generator = new HelperGenerator();
+        ArrayList<AbstractTransaction> tx = new ArrayList<>();
+        tx.add(generator.getCoinbaseTransaction());
+        tx.add(generator.getTransaction());
 
         Blockchain blockchain = new Blockchain();
 

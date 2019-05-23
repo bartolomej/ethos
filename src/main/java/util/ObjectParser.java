@@ -1,10 +1,7 @@
 package util;
 
 import core.block.Block;
-import core.transaction.Transaction;
-import core.transaction.TxInput;
-import core.transaction.TxOutput;
-import core.transaction.TxRootIndex;
+import core.transaction.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,17 +12,16 @@ import java.util.List;
 public class ObjectParser {
 
     public static TxInput parseJsonInput(JSONObject input) {
-        byte[] sig = ByteUtil.toByteArray(input.getString("sig"));
-        byte[] txHash = ByteUtil.toByteArray(input.getString("tx_hash"));
-        byte[] prevTxHash = ByteUtil.toByteArray(input.getString("prev_tx_hash"));
+        byte[] sig = ByteUtil.decodeFromBase64(input.getString("sig"));
+        byte[] prevTxHash = ByteUtil.decodeFromBase64(input.getString("prev_tx"));
         long value = input.getLong("value");
         int outputIndex = input.getInt("output_index");
-        return new TxInput(sig, txHash, prevTxHash, outputIndex, value);
+        return new TxInput(sig, prevTxHash, outputIndex, value);
     }
 
     public static TxOutput parseJsonOutput(JSONObject output) {
-        byte[] recipientPubKey = ByteUtil.toByteArray(output.getString("recipient_pub_key"));
-        int outputIndex = output.getInt("output_index");
+        byte[] recipientPubKey = ByteUtil.decodeFromBase64(output.getString("address"));
+        int outputIndex = output.getInt("index");
         long value = output.getLong("value");
         return new TxOutput(recipientPubKey, value, outputIndex);
     }
@@ -47,21 +43,22 @@ public class ObjectParser {
     }
 
     public static TxRootIndex parseTxRootIndex(JSONObject index) {
-        byte[] jsonBlockHash = ByteUtil.toByteArray(index.getString("block_hash"));
+        byte[] jsonBlockHash = ByteUtil.decodeFromBase64(index.getString("block_hash"));
         JSONArray jsonArray = index.getJSONArray("transactions");
         byte[][] transactions = new byte[jsonArray.length()][];
         for (int i = 0; i < jsonArray.length(); i++) {
-            transactions[i] = ByteUtil.toByteArray(jsonArray.getString(i));
+            transactions[i] = ByteUtil.decodeFromBase64(jsonArray.getString(i));
         }
         return new TxRootIndex(jsonBlockHash, transactions);
     }
 
-    public static Transaction parseJsonTransaction(JSONObject transaction) {
+    public static AbstractTransaction parseJsonTransaction(JSONObject transaction) {
+        if (!transaction.has("inputs")) return parseJsonCoinbaseTransaction(transaction); // replace with isCoinbase property ?
         ArrayList<TxInput> inputs = parseJsonInputArray(transaction.getJSONArray("inputs"));
         ArrayList<TxOutput> outputs = parseJsonOutputArray(transaction.getJSONArray("outputs"));
-        byte[] signature = ByteUtil.toByteArray(transaction.getString("signature"));
-        byte[] hash = ByteUtil.toByteArray(transaction.getString("hash"));
-        byte[] pubKey = ByteUtil.toByteArray(transaction.getString("pub_key"));
+        byte[] signature = ByteUtil.decodeFromBase64(transaction.getString("signature"));
+        byte[] hash = ByteUtil.decodeFromBase64(transaction.getString("hash"));
+        byte[] pubKey = ByteUtil.decodeFromBase64(transaction.getString("address"));
         long timestamp = transaction.getLong("timestamp");
         Transaction tx = null;
         try {
@@ -72,11 +69,25 @@ public class ObjectParser {
         return tx;
     }
 
+    public static CoinbaseTransaction parseJsonCoinbaseTransaction(JSONObject transaction) {
+        ArrayList<TxOutput> outputs = parseJsonOutputArray(transaction.getJSONArray("outputs"));
+        byte[] hash = ByteUtil.decodeFromBase64(transaction.getString("hash"));
+        byte[] pubKey = ByteUtil.decodeFromBase64(transaction.getString("address"));
+        long timestamp = transaction.getLong("timestamp");
+        CoinbaseTransaction tx = null;
+        try {
+            tx = new CoinbaseTransaction(pubKey, hash,null, timestamp, outputs);
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        return tx;
+    }
+
     public static Block parseJsonBlock(JSONObject jsonBlock) {
-        byte[] hash = ByteUtil.toByteArray(jsonBlock.getString("hash"));
-        byte[] miner = ByteUtil.toByteArray(jsonBlock.getString("miner"));
-        byte[] txRoot = ByteUtil.toByteArray(jsonBlock.getString("tx_root"));
-        byte[] prevBlockHash = ByteUtil.toByteArray(jsonBlock.getString("prev_block_hash"));
+        byte[] hash = ByteUtil.decodeFromBase64(jsonBlock.getString("hash"));
+        byte[] miner = ByteUtil.decodeFromBase64(jsonBlock.getString("miner"));
+        byte[] txRoot = ByteUtil.decodeFromBase64(jsonBlock.getString("tx_root"));
+        byte[] prevBlockHash = ByteUtil.decodeFromBase64(jsonBlock.getString("prev_block"));
         int difficulty = jsonBlock.getInt("difficulty");
         long timestamp = jsonBlock.getLong("timestamp");
         int index = jsonBlock.getInt("index");

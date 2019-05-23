@@ -27,7 +27,7 @@ public class NetService extends EthosListener {
                 return StateManager.onBlock(block);
             }
             case TRANSACTION: {
-                Transaction tx = ObjectParser.parseJsonTransaction(message.getBody());
+                Transaction tx = (Transaction)ObjectParser.parseJsonTransaction(message.getBody());
                 return StateManager.onTransaction(tx);
             }
             default: {

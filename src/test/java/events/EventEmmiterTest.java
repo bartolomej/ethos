@@ -18,7 +18,7 @@ public class EventEmmiterTest {
     public void addFirstEventListener() throws InvalidKeySpecException, InvalidKeyException {
         TestSubscriber subscriber = new TestSubscriber();
         EventEmmiter.addListener(subscriber);
-        EventEmmiter.onTransactionReceived(HelperGenerator.generateTestValidTransaction());
+        EventEmmiter.onTransactionReceived(new HelperGenerator().getTransaction());
         ArrayList<StatusReport> reports = EventEmmiter.onStatusReportRequest();
 
         assertEquals(reports.size(), 1);

@@ -10,12 +10,11 @@ public class ByteUtil {
 
     // TODO: replace with base64 encoding
     public static String encodeToBase64(byte[] input) {
-        byte[] encoded = Base64.getEncoder().encode("Hello".getBytes());
-        return new String(encoded);
+        return Base64.getEncoder().encodeToString(input);
     }
 
     public static byte[] decodeFromBase64(String input) {
-        return Base64.getDecoder().decode(input.getBytes());
+        return Base64.getDecoder().decode(input);
     }
 
     public static String toHexString(byte[] bytes) {

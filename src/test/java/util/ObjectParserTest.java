@@ -77,8 +77,8 @@ public class ObjectParserTest {
 
     @Test
     public void parseJsonTransaction() throws InvalidKeySpecException, InvalidKeyException {
-        Transaction tx = HelperGenerator.generateTestValidTransaction();
-        Transaction parsedTx = ObjectParser.parseJsonTransaction(tx.toJson());
+        Transaction tx = new HelperGenerator().getTransaction();
+        Transaction parsedTx = (Transaction)ObjectParser.parseJsonTransaction(tx.toJson());
 
         assertTrue(tx.equals(parsedTx));
     }

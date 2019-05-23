@@ -16,16 +16,20 @@ public class CoinbaseTransaction extends AbstractTransaction {
 
     public static long BLOCK_REWARD = 100;
 
-    public static CoinbaseTransaction generate(byte[] recipientPubKey) throws InvalidKeySpecException, InvalidKeyException {
+    public static CoinbaseTransaction generate(byte[] address) throws InvalidKeySpecException, InvalidKeyException {
         ArrayList<TxOutput> outputs = new ArrayList<>();
-        outputs.add(new TxOutput(recipientPubKey, CoinbaseTransaction.BLOCK_REWARD, 0));
+        outputs.add(new TxOutput(address, CoinbaseTransaction.BLOCK_REWARD, 0));
         long timestamp = System.currentTimeMillis();
-        return new CoinbaseTransaction(recipientPubKey, null, timestamp, outputs);
+        return new CoinbaseTransaction(address, null, timestamp, outputs);
     }
 
-    public CoinbaseTransaction(byte[] recipientPubKey, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeyException, InvalidKeySpecException { // recipientPubKey == receiveAddress for now
-        super(null, outputs, recipientPubKey, signature, null, timestamp);
+    public CoinbaseTransaction(byte[] address, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeySpecException { // address == receiveAddress for now
+        super(null, outputs, address, signature, null, timestamp);
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
+    }
+
+    public CoinbaseTransaction(byte[] address, byte[] hash, byte[] signature, long timestamp, ArrayList<TxOutput> outputs) throws InvalidKeySpecException { // address == receiveAddress for now
+        super(null, outputs, address, signature, hash, timestamp);
     }
 
     public byte[] getHash() {
@@ -101,12 +105,13 @@ public class CoinbaseTransaction extends AbstractTransaction {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{timestamp: %s, hash: %s, output: %s}",
-                this.timestamp,
-                ByteUtil.toHexString(this.hash),
-                TxOutput.arrayToJson(this.getOutputs())
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("timestamp", this.getTimestamp());
+        jsonObject.put("hash", ByteUtil.encodeToBase64(this.getHash()));
+        jsonObject.put("address", ByteUtil.encodeToBase64(this.getPublicKey().getEncoded()));
+        jsonObject.put("outputs", TxOutput.arrayToJson(this.getOutputs()));
+        return jsonObject;
+
     }
 
 }

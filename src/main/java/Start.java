@@ -1,5 +1,6 @@
 import config.Constants;
 import core.StateManager;
+import db.DbFacade;
 import events.EventEmmiter;
 import net.HTTPServer;
 
@@ -15,6 +16,7 @@ public class Start {
         stateManager = new StateManager();
 
         startServer();
+        DbFacade.init();
     }
 
     private static void startServer() {
@@ -22,30 +24,6 @@ public class Start {
             httpServer = new HTTPServer();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void initDirs() {
-        if (!new File(Constants.DB_DIR).exists()) {
-            new File(Constants.DB_DIR).mkdir();
-        }
-        if (!new File(Constants.ACCOUNT_STORE_DIR).exists()) {
-            new File(Constants.ACCOUNT_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.BLOCK_STORE_DIR).exists()) {
-            new File(Constants.BLOCK_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.TX_STORE_DIR).exists()) {
-            new File(Constants.TX_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.PEERS_STORE_DIR).exists()) {
-            new File(Constants.PEERS_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.INDEX_STORE_DIR).exists()) {
-            new File(Constants.INDEX_STORE_DIR).mkdir();
-        }
-        if (!new File(Constants.LOG_DIR).exists()) {
-            new File(Constants.LOG_DIR).mkdir();
         }
     }
 

@@ -25,7 +25,7 @@ public class TxInput {
      */
     private byte[] signature;
     public long value;
-    private byte[] pubKey;
+    private byte[] outputAddress;
 
     /** @Deprecated  */
     public TxInput(byte[] signature, byte[] prevTxHash, TxOutput prevOutput) {
@@ -34,15 +34,22 @@ public class TxInput {
         this.signature = signature;
         this.prevOutputIndex = prevOutput.getOutputIndex();
         this.value = prevOutput.getValue();
-        this.pubKey = prevOutput.getRecipientPubKey();
+        this.outputAddress = prevOutput.getRecipientPubKey();
     }
 
-    public TxInput(byte[] signature, byte[] pubKey, byte[] prevTxHash, int prevOutputIndex, long value) {
+    public TxInput(byte[] signature, byte[] outputAddress, byte[] prevTxHash, int prevOutputIndex, long value) {
         this.prevTxHash = prevTxHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutputIndex;
         this.value = value;
-        this.pubKey = pubKey;
+        this.outputAddress = outputAddress;
+    }
+
+    public TxInput(byte[] signature, byte[] prevTxHash, int prevOutputIndex, long value) {
+        this.prevTxHash = prevTxHash;
+        this.signature = signature;
+        this.prevOutputIndex = prevOutputIndex;
+        this.value = value;
     }
 
     public byte[] getPrevOutputHash() {
@@ -64,9 +71,21 @@ public class TxInput {
     public boolean valid() {
         boolean valid;
         try {
-            PublicKey publicKey = KeyUtil.parsePublicKey(this.pubKey);
+            PublicKey publicKey = KeyUtil.parsePublicKey(this.outputAddress);
             valid = SigUtil.verify(publicKey, this.signature,
-                    (ByteUtil.toHexString(prevTxHash) + prevOutputIndex).getBytes());
+                    (ByteUtil.encodeToBase64(prevTxHash) + prevOutputIndex).getBytes());
+        } catch (Exception e) {
+            return false;
+        }
+        return valid;
+    }
+
+    public boolean valid(byte[] outputAddress) {
+        boolean valid;
+        try {
+            PublicKey publicKey = KeyUtil.parsePublicKey(outputAddress);
+            valid = SigUtil.verify(publicKey, this.signature,
+                    (ByteUtil.encodeToBase64(prevTxHash) + prevOutputIndex).getBytes());
         } catch (Exception e) {
             return false;
         }
@@ -98,13 +117,12 @@ public class TxInput {
     }
 
     public JSONObject toJson() {
-        String json = String.format("{tx_hash: %s, sig: %s, prev_output_hash: %s, value: %s, output_index: %s}",
-                (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)),
-                ByteUtil.toHexString(this.signature),
-                ByteUtil.toHexString(this.prevTxHash),
-                this.value, this.prevOutputIndex
-        );
-        return new JSONObject(json);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("sig", ByteUtil.encodeToBase64(this.signature));
+        jsonObject.put("prev_tx", ByteUtil.encodeToBase64(this.prevTxHash));
+        jsonObject.put("value", this.value);
+        jsonObject.put("output_index", this.prevOutputIndex);
+        return jsonObject;
     }
 
     public String toString() {
@@ -113,9 +131,8 @@ public class TxInput {
 
     public String toStringWithSuffix(String suffix) {
         String encoded = "TxInputData {";
-        encoded += "tx_hash=" + (this.txHash == null ? "" : ByteUtil.toHexString(this.txHash)) + suffix;
-        encoded += "prev_out_hash=" + ByteUtil.toHexString(this.prevTxHash) + suffix;
-        encoded += "sig=" + ByteUtil.toHexString(this.signature) + suffix;
+        encoded += "prev_tx=" + (this.prevTxHash == null ? "" : ByteUtil.encodeToBase64(this.prevTxHash)) + suffix;
+        encoded += "sig=" + ByteUtil.encodeToBase64(this.signature) + suffix;
         encoded += "output_index=" + this.prevOutputIndex + suffix;
         encoded += "value=" + this.value;
         encoded += "}";
