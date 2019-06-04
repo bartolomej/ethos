@@ -1,8 +1,5 @@
 package core.block;
 
-import core.block.AbstractBlock;
-import core.block.Block;
-import core.block.GenesisBlock;
 import crypto.KeyUtil;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -63,7 +60,7 @@ public class BlockTest {
         String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
                 ByteUtil.toHexString(firstBlock.getHash()),
                 firstBlock.getDifficulty(),
-                firstBlock.getIndex(),
+                firstBlock.getHeight(),
                 firstBlock.getTimestamp(),
                 ByteUtil.toHexString(firstBlock.getMiner()),
                 ByteUtil.toHexString(firstBlock.getPreviousBlockHash())

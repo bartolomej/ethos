@@ -2,6 +2,7 @@ package core;
 
 import core.block.AbstractBlock;
 import core.block.Block;
+import core.transaction.AbstractTransaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +22,13 @@ public class Chain {
     public Chain() {};
 
     public void add(AbstractBlock block) {
-        chain.add(block);
-        index.put(block.getHash(), block);
+        this.chain.add(block);
+        this.index.put(block.getHash(), block);
+    }
+
+    public void add(int index, AbstractBlock block) {
+        this.chain.add(index, block);
+        this.index.put(block.getHash(), block);
     }
 
     // if null this is main chain

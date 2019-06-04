@@ -27,11 +27,12 @@ public class TxRootIndexTest {
         TxRootIndex txRootIndex = new TxRootIndex(blockHash, txHashes);
 
         ArrayList<String> expectedTxArray = new ArrayList<>();
-        expectedTxArray.add("0101010101");
-        expectedTxArray.add("0202020202");
+        expectedTxArray.add(ByteUtil.encodeToBase64(txHashes[0]));
+        expectedTxArray.add(ByteUtil.encodeToBase64(txHashes[1]));
 
         JSONObject expectedJson = new JSONObject();
-        expectedJson.put("block_hash", ByteUtil.toHexString(blockHash));
+        expectedJson.put("tx_root", ByteUtil.encodeToBase64(new byte[]{0,0,0,0})); // TODO: implement
+        expectedJson.put("block_hash", ByteUtil.encodeToBase64(blockHash));
         expectedJson.put("transactions", expectedTxArray);
 
         assertEquals(expectedJson.toString(), txRootIndex.toJson().toString());

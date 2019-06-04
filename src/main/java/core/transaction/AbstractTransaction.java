@@ -82,6 +82,12 @@ public abstract class AbstractTransaction {
         return TxOutput.sum(this.outputs);
     }
 
+    public abstract byte[] getInputSigData(int outputIndex);
+
+    public abstract TxInput getInput(int index);
+
+    public abstract TxOutput getOutput(int index);
+
     public ArrayList<TxInput> getInputs() {
         return this.inputs;
     }

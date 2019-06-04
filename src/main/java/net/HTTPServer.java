@@ -8,8 +8,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.URI;
+import java.net.*;
 
 public class HTTPServer {
 
@@ -73,6 +72,10 @@ public class HTTPServer {
     public static byte[] invalidRequest(String message, Exception e) {
         JSONObject parsedException = ParseUtil.parseException(e);
         return new PeerMessage(MessageTypes.ERROR, message, parsedException).encode();
+    }
+
+    public static String getLocalIp() throws UnknownHostException {
+        return InetAddress.getLocalHost().getHostAddress();
     }
 
     private static void logRequest(HttpExchange exchange) {

@@ -108,7 +108,7 @@ public class Block extends AbstractBlock {
         String encoded = "";
         encoded += "BlockData {";
         encoded += "difficulty=" + this.getDifficulty() + suffix;
-        encoded += "index=" + this.getIndex() + suffix;
+        encoded += "index=" + this.getHeight() + suffix;
         encoded += "timestamp=" + this.getTimestamp() + suffix;
         encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.encodeToBase64(this.getMiner())) + suffix;
         encoded += "prev_block=" + ByteUtil.encodeToBase64(this.getPreviousBlockHash()) + suffix;
@@ -122,7 +122,7 @@ public class Block extends AbstractBlock {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("hash", ByteUtil.encodeToBase64(this.getHash()));
         jsonObject.put("difficulty", this.getDifficulty());
-        jsonObject.put("index", this.getIndex());
+        jsonObject.put("index", this.getHeight());
         jsonObject.put("timestamp", this.getTimestamp());
         jsonObject.put("miner", ByteUtil.encodeToBase64(this.getMiner()));
         jsonObject.put("prev_block", ByteUtil.encodeToBase64(this.getPreviousBlockHash()));
@@ -134,7 +134,7 @@ public class Block extends AbstractBlock {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("hash", ByteUtil.encodeToBase64(this.hash));
         jsonObject.put("difficulty", this.getDifficulty());
-        jsonObject.put("index", this.getIndex());
+        jsonObject.put("index", this.getHeight());
         jsonObject.put("timestamp", this.getTimestamp());
         jsonObject.put("miner", ByteUtil.encodeToBase64(this.getMiner()));
         jsonObject.put("prev_block", ByteUtil.encodeToBase64(this.getPreviousBlockHash()));

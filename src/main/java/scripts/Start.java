@@ -1,11 +1,13 @@
-import config.Constants;
+package scripts;
+
+import com.sun.net.httpserver.HttpServer;
+import config.SystemValues;
 import core.StateManager;
 import db.DbFacade;
-import events.EventEmmiter;
 import net.HTTPServer;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 public class Start {
 
@@ -17,12 +19,21 @@ public class Start {
 
         startServer();
         DbFacade.init();
+        initState();
     }
 
     private static void startServer() {
         try {
             httpServer = new HTTPServer();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void initState() {
+        try {
+            SystemValues.NODE_ADDRESS = HTTPServer.getLocalIp();
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }

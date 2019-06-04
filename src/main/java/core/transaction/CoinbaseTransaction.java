@@ -36,6 +36,19 @@ public class CoinbaseTransaction extends AbstractTransaction {
         return this.hash;
     }
 
+    public byte[] getInputSigData(int index) {
+        return (ByteUtil.encodeToBase64(this.getHash()) +
+                this.getOutput().getOutputIndex()).getBytes();
+    }
+
+    public TxInput getInput(int index) {
+        return null;
+    }
+
+    public TxOutput getOutput(int index) {
+        return this.outputs.get(index);
+    }
+
     public TxOutput getOutput() {
         return this.getOutputs().get(0);
     }
@@ -69,9 +82,9 @@ public class CoinbaseTransaction extends AbstractTransaction {
     public boolean equals(AbstractTransaction transaction) {
         return (
                 Arrays.equals(super.getSignature(), transaction.getSignature()) &
-                        this.outputsEquals(transaction.getOutputs()) &
-                        this.isSigValid() == transaction.isSigValid() &
-                        TxOutput.sum(super.getOutputs()) == TxOutput.sum(transaction.getOutputs())
+                this.outputsEquals(transaction.getOutputs()) &
+                this.isSigValid() == transaction.isSigValid() &
+                TxOutput.sum(this.getOutputs()) == TxOutput.sum(transaction.getOutputs())
         );
     }
 

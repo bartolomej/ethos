@@ -1,5 +1,6 @@
 package net;
 
+import crypto.HashUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,6 +12,14 @@ public class PeerNode {
 
     public PeerNode(String address) {
         this.address = address;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public byte[] getAddressHash() {
+        return HashUtil.sha256(address.getBytes());
     }
 
     public JSONObject toJson() {

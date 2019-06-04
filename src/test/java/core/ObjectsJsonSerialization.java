@@ -23,7 +23,7 @@ public class ObjectsJsonSerialization {
         int index = 0;
 
         TxOutput output = new TxOutput(recipientAddress, value, index);
-        TxInput input = new TxInput(sig, txHash, output);
+        TxInput input = new TxInput(sig, output.getRecipientPubKey(), txHash, output.getOutputIndex(), output.getValue());
 
         JSONObject expected = new JSONObject();
         expected.put("sig", ByteUtil.encodeToBase64(sig));

@@ -2,7 +2,6 @@ package core.block;
 
 import config.Constants;
 import core.transaction.AbstractTransaction;
-import core.transaction.Transaction;
 import crypto.HashUtil;
 import crypto.KeyUtil;
 import java.lang.Exception;
@@ -98,7 +97,7 @@ public class GenesisBlock extends AbstractBlock {
         String encoded = "";
         encoded += "BlockData {";
         encoded += "difficulty=" + this.getDifficulty() + suffix;
-        encoded += "index=" + this.getIndex() + suffix;
+        encoded += "index=" + this.getHeight() + suffix;
         encoded += "timestamp=" + this.timestamp + suffix;
         encoded += "miner=" + (this.getMiner() == null ? "null" : ByteUtil.encodeToBase64(this.getMiner())) + suffix;
         encoded += "prev_block=" + null + suffix;
@@ -112,7 +111,7 @@ public class GenesisBlock extends AbstractBlock {
         String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s}",
                 ByteUtil.encodeToBase64(this.hash),
                 this.getDifficulty(),
-                this.getIndex(),
+                this.getHeight(),
                 this.timestamp,
                 ByteUtil.encodeToBase64(this.getMiner()),
                 null
@@ -125,7 +124,7 @@ public class GenesisBlock extends AbstractBlock {
         String json = String.format("{hash: %s, difficulty: %s, index: %s, timestamp: %s, miner: %s, prev_block_hash: %s, tx: %s}",
                 ByteUtil.encodeToBase64(this.hash),
                 this.getDifficulty(),
-                this.getIndex(),
+                this.getHeight(),
                 this.timestamp,
                 ByteUtil.encodeToBase64(this.getMiner()),
                 null,

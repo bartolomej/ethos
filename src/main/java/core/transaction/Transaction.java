@@ -27,6 +27,18 @@ public class Transaction extends AbstractTransaction {
         this.hash = HashUtil.sha256(this.getHeaderString().getBytes());
     }
 
+    public TxInput getInput(int index) {
+        return this.inputs.get(index);
+    }
+
+    public TxOutput getOutput(int index) {
+        return this.outputs.get(index);
+    }
+
+    public byte[] getInputSigData(int outputIndex) {
+        return (ByteUtil.encodeToBase64(this.getHash()) +
+                this.getOutput(outputIndex).getOutputIndex()).getBytes();
+    }
 
     public boolean valid() {
         return (
@@ -65,7 +77,9 @@ public class Transaction extends AbstractTransaction {
 
     private boolean validInputs() {
         for (TxInput input : this.getInputs()) {
-            if (!input.valid()) return false;
+            // VALIDATE WITH PUBLIC KEY IN TX
+            if (!input.valid(this.getPublicKey().getEncoded()))
+                return false;
         }
         return true;
     }

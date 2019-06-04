@@ -4,9 +4,7 @@ import core.block.AbstractBlock;
 import core.block.Block;
 import core.block.GenesisBlock;
 import core.transaction.AbstractTransaction;
-import core.transaction.Transaction;
 import crypto.KeyUtil;
-import events.EthosListener;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -27,6 +25,10 @@ public class Blockchain {
 
     public Blockchain() {
         chain = new Chain();
+    }
+
+    public void loadFullBlock(Block block) {
+        chain.add(block.getHeight(), block);
     }
 
     public void addTransaction(AbstractTransaction tx) throws Exception {
@@ -54,7 +56,7 @@ public class Blockchain {
                 parent.getHash(),
                 minerAddress,
                 difficulty,
-                parent.getIndex()+1
+                parent.getHeight()+1
         );
         candidate.addTransactions(txs);
         if (!candidate.valid()) {

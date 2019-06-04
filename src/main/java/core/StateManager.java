@@ -1,14 +1,15 @@
 package core;
 
 import core.block.Block;
-import core.transaction.AbstractTransaction;
-import core.transaction.Transaction;
-import core.transaction.TxRootIndex;
+import core.transaction.*;
 import db.BlockStore;
+import db.DbFacade;
+import db.PeerStore;
 import db.TransactionStore;
 import net.MessageTypes;
 import net.PeerMessage;
 import net.PeerNode;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -18,7 +19,20 @@ public class StateManager {
     private static Blockchain blockchain = new Blockchain();
 
     public static void init() {
-        // TODO: initialize blockchain (load from storage)
+        DbFacade.init();
+    }
+
+    private void loadBlocks() {
+        try {
+            Block bestBlock = BlockStore.getBest();
+            Block nextBlock = bestBlock;
+            while (nextBlock.getHeight() > 0) {
+                blockchain.loadFullBlock(nextBlock);
+                nextBlock = BlockStore.getByHash(nextBlock.getPreviousBlockHash());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static PeerMessage onTransaction(Transaction tx) {
@@ -34,6 +48,8 @@ public class StateManager {
     public static PeerMessage onBlock(Block block) {
         // TODO: find out if block already in chain
         try {
+            BlockStore.getByHash(block.getHash());
+            BlockStore.getByHeight(block.getHeight());
             blockchain.addExternalBlock(block);
         } catch (Exception e) {
             return PeerMessage.errors(block.getAllExceptions());
@@ -42,17 +58,26 @@ public class StateManager {
     }
 
     public static PeerMessage onPeerDiscovered(PeerNode node) {
-        // TODO: store peer info
+        PeerStore.save(node.getAddressHash(), node.toJson());
         return PeerMessage.ok();
+    }
+
+    public static PeerMessage getPeers() {
+        ArrayList<PeerNode> nodes = PeerStore.getAllPeers();
+
+        return PeerMessage.peers(nodes);
     }
 
     public static void saveBlock(Block block) {
         TxRootIndex txRootIndex = new TxRootIndex(block.getHash(), block.getTransactions());
 
-        BlockStore.save(block.getHash(), block.toJson());
+        BlockStore.save(block.getHash(), block.getHeight(), block.toJson());
         TransactionStore.saveTxRootIndex(txRootIndex.getBlockHash(), txRootIndex.toJson());
         for (AbstractTransaction tx : block.getTransactions()) {
             TransactionStore.saveTx(tx.getHash(), tx.toJson());
+            TransactionStore.saveOutputs(tx.getHash(), TxOutput.arrayToJson(tx.getOutputs()));
+            if (tx.getInputs() == null) continue;
+            TransactionStore.saveInputs(tx.getHash(), TxInput.arrayToJson(tx.getInputs()));
         }
     }
 
@@ -66,7 +91,7 @@ public class StateManager {
         return block;
     }
 
-    public static PeerMessage onStatusReports() {
+    public static PeerMessage onStatusReport() {
         ArrayList<StatusReport> reports = new ArrayList<>();
 
         StatusReport blockchainReport = new StatusReport("Blockchain");

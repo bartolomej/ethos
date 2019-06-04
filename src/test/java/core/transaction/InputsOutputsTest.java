@@ -23,19 +23,19 @@ public class InputsOutputsTest {
 
         TxOutput txOutput1 = new TxOutput(publicKey.getEncoded(), 10, 0);
 
-        byte[] sig = SigUtil.sign(privateKey,
-                (ByteUtil.toHexString(prevTxHash) + txOutput1.getOutputIndex()).getBytes());
-        TxInput txInput1 = new TxInput(sig, prevTxHash, txOutput1);
+        byte[] sigData = (ByteUtil.encodeToBase64(prevTxHash) + txOutput1.getOutputIndex()).getBytes();
+        byte[] sig = SigUtil.sign(privateKey, sigData);
+        TxInput txInput1 = new TxInput(sig, publicKey.getEncoded(), prevTxHash, txOutput1.getOutputIndex(), txOutput1.getValue());
 
         assertTrue(txOutput1.valid());
         assertTrue(txInput1.valid());
     }
 
     @Test
-    public void validInputOutputChain() throws InvalidKeyException {
+    public void validInputOutputChainRaw() throws InvalidKeyException {
         // test transaction hash id
-        byte[] txHash1 = new byte[]{0,0,0,0,0,0};
-        byte[] txHash2 = new byte[]{1,1,1,1,1,1};
+        byte[] somePrevTxHash = new byte[]{0,0,0,0,0,0};
+        byte[] somePrevTxHash2 = new byte[]{1,1,1,1,1,1};
         // first key pair
         KeyUtil keys1 = KeyUtil.generate();
         PublicKey address1 = keys1.getPublicKey();
@@ -49,34 +49,34 @@ public class InputsOutputsTest {
         TxOutput txOutput1Tx1 = new TxOutput(address1.getEncoded(), 10, 0); // send 10 to address1
         TxOutput txOutput2Tx1 = new TxOutput(address2.getEncoded(), 10, 0); // send 10 to address2
 
-        byte[] sigData1 = (ByteUtil.toHexString(txHash1) + txOutput1Tx1.getOutputIndex()).getBytes();
-        byte[] sigData2 = (ByteUtil.toHexString(txHash1) + txOutput1Tx1.getOutputIndex()).getBytes();
+        byte[] sigData1 = (ByteUtil.encodeToBase64(somePrevTxHash) + txOutput1Tx1.getOutputIndex()).getBytes();
+        byte[] sigData2 = (ByteUtil.encodeToBase64(somePrevTxHash) + txOutput2Tx1.getOutputIndex()).getBytes();
 
         byte[] sigInput1Tx1 = SigUtil.sign(privateKey1, sigData1);
         byte[] sigInput2Tx1 = SigUtil.sign(privateKey2, sigData2);
 
         // SECOND TRANSACTION
-        TxInput txInput1Tx2 = new TxInput(sigInput1Tx1, txHash1, txOutput1Tx1);
-        TxInput txInput2Tx2 = new TxInput(sigInput2Tx1, txHash1, txOutput2Tx1);
+        TxInput txInput1Tx2 = new TxInput(sigInput1Tx1, txOutput1Tx1.getRecipientPubKey(), somePrevTxHash, txOutput1Tx1.getOutputIndex(), txOutput1Tx1.getValue());
+        TxInput txInput2Tx2 = new TxInput(sigInput2Tx1, txOutput2Tx1.getRecipientPubKey(), somePrevTxHash, txOutput2Tx1.getOutputIndex(), txOutput2Tx1.getValue());
 
         TxOutput txOutput1Tx2 = new TxOutput(address1.getEncoded(), 5, 0); // send 5 to address1
         TxOutput txOutput2Tx2 = new TxOutput(address2.getEncoded(), 5, 0); // send 5 to address2
 
-        byte[] sigData3 =  (ByteUtil.toHexString(txHash2) + txOutput2Tx1.getOutputIndex()).getBytes();
-        byte[] sigData4 = (ByteUtil.toHexString(txHash2) + txOutput2Tx2.getOutputIndex()).getBytes();
+        byte[] sigData3 =  (ByteUtil.encodeToBase64(somePrevTxHash2) + txOutput1Tx2.getOutputIndex()).getBytes();
+        byte[] sigData4 = (ByteUtil.encodeToBase64(somePrevTxHash2) + txOutput2Tx2.getOutputIndex()).getBytes();
 
-        byte[] sigOutput1Tx2 = SigUtil.sign(privateKey1, sigData3);
-        byte[] sigOutput2Tx2 = SigUtil.sign(privateKey2, sigData4);
+        byte[] sigInput1Tx2 = SigUtil.sign(privateKey1, sigData3);
+        byte[] sigInput2Tx2 = SigUtil.sign(privateKey2, sigData4);
 
         // THIRD TRANSACTION
-        TxInput txInput1Tx3 = new TxInput(sigOutput1Tx2, txHash2, txOutput1Tx2);
-        TxInput txInput2Tx3 = new TxInput(sigOutput2Tx2, txHash2, txOutput2Tx2);
+        TxInput txInput1Tx3 = new TxInput(sigInput1Tx2, txOutput1Tx2.getRecipientPubKey(), somePrevTxHash2, txOutput1Tx2.getOutputIndex(), txOutput1Tx2.getValue());
+        TxInput txInput2Tx3 = new TxInput(sigInput2Tx2, txOutput2Tx2.getRecipientPubKey(), somePrevTxHash2, txOutput2Tx2.getOutputIndex(), txInput2Tx2.getValue());
 
 
         assertTrue(txOutput1Tx1.valid());
-        assertTrue(txInput1Tx2.valid());
-
         assertTrue(txOutput2Tx1.valid());
+
+        assertTrue(txInput1Tx2.valid());
         assertTrue(txInput2Tx2.valid());
 
         assertTrue(txOutput1Tx2.valid());

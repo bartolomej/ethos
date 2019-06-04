@@ -2,12 +2,12 @@ package util;
 
 import core.block.Block;
 import core.transaction.*;
+import net.PeerNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ObjectParser {
 
@@ -16,7 +16,7 @@ public class ObjectParser {
         byte[] prevTxHash = ByteUtil.decodeFromBase64(input.getString("prev_tx"));
         long value = input.getLong("value");
         int outputIndex = input.getInt("output_index");
-        return new TxInput(sig, prevTxHash, outputIndex, value);
+        return new TxInput(sig, null, prevTxHash, outputIndex, value);
     }
 
     public static TxOutput parseJsonOutput(JSONObject output) {
@@ -92,5 +92,10 @@ public class ObjectParser {
         long timestamp = jsonBlock.getLong("timestamp");
         int index = jsonBlock.getInt("index");
         return new Block(hash, prevBlockHash, txRoot, miner, timestamp, difficulty, index);
+    }
+
+    public static PeerNode parseJsonPeer(JSONObject jsonPeer) {
+        String address = jsonPeer.getString("address");
+        return new PeerNode(address);
     }
 }

@@ -25,31 +25,22 @@ public class TxInput {
      */
     private byte[] signature;
     public long value;
-    private byte[] outputAddress;
+    private byte[] prevOutputPubKey;
 
-    /** @Deprecated  */
-    public TxInput(byte[] signature, byte[] prevTxHash, TxOutput prevOutput) {
-        this.prevTxHash = prevOutput.getHashValue();
-        this.prevTxHash = prevTxHash;
-        this.signature = signature;
-        this.prevOutputIndex = prevOutput.getOutputIndex();
-        this.value = prevOutput.getValue();
-        this.outputAddress = prevOutput.getRecipientPubKey();
-    }
-
-    public TxInput(byte[] signature, byte[] outputAddress, byte[] prevTxHash, int prevOutputIndex, long value) {
+    public TxInput(byte[] signature, byte[] prevOutputPubKey, byte[] prevTxHash, int prevOutputIndex, long value) {
         this.prevTxHash = prevTxHash;
         this.signature = signature;
         this.prevOutputIndex = prevOutputIndex;
         this.value = value;
-        this.outputAddress = outputAddress;
+        this.prevOutputPubKey = prevOutputPubKey; // pubKey from previous txOutput -> used for pubKeyScript verification
     }
 
-    public TxInput(byte[] signature, byte[] prevTxHash, int prevOutputIndex, long value) {
+    public TxInput(byte[] signature, byte[] prevTxHash, TxOutput txOutput) {
         this.prevTxHash = prevTxHash;
         this.signature = signature;
-        this.prevOutputIndex = prevOutputIndex;
-        this.value = value;
+        this.prevOutputIndex = txOutput.getOutputIndex();
+        this.value = txOutput.getValue();
+        this.prevOutputPubKey = txOutput.getRecipientPubKey();
     }
 
     public byte[] getPrevOutputHash() {
@@ -68,24 +59,26 @@ public class TxInput {
         return this.prevOutputIndex;
     }
 
+    public byte[] getSigData() {
+        return (ByteUtil.encodeToBase64(prevTxHash) + prevOutputIndex).getBytes();
+    }
+
     public boolean valid() {
         boolean valid;
         try {
-            PublicKey publicKey = KeyUtil.parsePublicKey(this.outputAddress);
-            valid = SigUtil.verify(publicKey, this.signature,
-                    (ByteUtil.encodeToBase64(prevTxHash) + prevOutputIndex).getBytes());
+            PublicKey publicKey = KeyUtil.parsePublicKey(this.prevOutputPubKey);
+            valid = SigUtil.verify(publicKey, this.signature, this.getSigData());
         } catch (Exception e) {
             return false;
         }
         return valid;
     }
 
-    public boolean valid(byte[] outputAddress) {
+    public boolean valid(byte[] prevOutputPubKey) {
         boolean valid;
         try {
-            PublicKey publicKey = KeyUtil.parsePublicKey(outputAddress);
-            valid = SigUtil.verify(publicKey, this.signature,
-                    (ByteUtil.encodeToBase64(prevTxHash) + prevOutputIndex).getBytes());
+            PublicKey publicKey = KeyUtil.parsePublicKey(prevOutputPubKey);
+            valid = SigUtil.verify(publicKey, this.signature, this.getSigData());
         } catch (Exception e) {
             return false;
         }
@@ -98,22 +91,6 @@ public class TxInput {
                 this.prevOutputIndex == input.getOutputIndex() &
                 this.value == input.getValue()
         );
-    }
-
-    public static int sum(ArrayList<TxInput> inputs) {
-        int sum = 0;
-        for (TxInput input : inputs) {
-            sum += input.value;
-        }
-        return sum;
-    }
-
-    public static JSONArray arrayToJson(ArrayList<TxInput> inputs) {
-        JSONArray jsonArray = new JSONArray();
-        for (TxInput input : inputs) {
-            jsonArray.put(input.toJson());
-        }
-        return jsonArray;
     }
 
     public JSONObject toJson() {
@@ -150,6 +127,22 @@ public class TxInput {
         }
         out += "]";
         return out;
+    }
+
+    public static int sum(ArrayList<TxInput> inputs) {
+        int sum = 0;
+        for (TxInput input : inputs) {
+            sum += input.getValue();
+        }
+        return sum;
+    }
+
+    public static JSONArray arrayToJson(ArrayList<TxInput> inputs) {
+        JSONArray jsonArray = new JSONArray();
+        for (TxInput input : inputs) {
+            jsonArray.put(input.toJson());
+        }
+        return jsonArray;
     }
 
 }

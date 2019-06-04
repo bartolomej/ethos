@@ -91,7 +91,7 @@ public abstract class AbstractBlock {
         return this.difficulty;
     }
 
-    public int getIndex() {
+    public int getHeight() {
         return this.index;
     }
 
@@ -112,8 +112,7 @@ public abstract class AbstractBlock {
     }
 
     public byte[] getTransactionsRootHash() {
-        return new byte[]{0,0,0,0,0}; // TODO: for debugging purposes
-        //return this.transactionRootHash;
+        return this.getHash();
     }
 
     public String getStringHash() {

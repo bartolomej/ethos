@@ -3,15 +3,14 @@ package net;
 import core.StateManager;
 import core.block.Block;
 import core.transaction.Transaction;
-import events.EthosListener;
 import util.ObjectParser;
 
-public class NetService extends EthosListener {
+public class NetService {
 
     public static PeerMessage onRequest(PeerMessage message) {
         switch (message.getType()) {
             case INFO: {
-                return StateManager.onStatusReports();
+                return StateManager.onStatusReport();
             }
             case PING: {
                 return new PeerMessage(MessageTypes.PONG, null);
@@ -20,7 +19,7 @@ public class NetService extends EthosListener {
                 // TODO: send blocks (use metadata in body)
             }
             case GET_PEERS: {
-                // TODO: send peers
+                return StateManager.getPeers();
             }
             case BLOCK: {
                 Block block = ObjectParser.parseJsonBlock(message.getBody());

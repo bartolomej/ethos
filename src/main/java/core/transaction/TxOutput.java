@@ -28,13 +28,10 @@ public class TxOutput {
         this.value = value;
     }
 
-    /** @deprecated **/
-    public byte[] getHashValue() {
-        String valueSum = (
-                this.getOutputIndex() + "" +
-                this.getValue()
-        );
-        return HashUtil.sha256(valueSum.getBytes());
+    public TxOutput(byte[] pubKeySig, byte[] recipientAddress, long value, int outputIndex) {
+        this.recipientAddress = recipientAddress;
+        this.outputIndex = outputIndex;
+        this.value = value;
     }
 
     public byte[] getRecipientPubKey() {
@@ -61,22 +58,6 @@ public class TxOutput {
 
     public boolean equals(TxOutput output) {
         return Arrays.equals(this.recipientAddress, output.recipientAddress) & this.value == output.value;
-    }
-
-    public static long sum(ArrayList<TxOutput> inputs) {
-        int sum = 0;
-        for (TxOutput input : inputs) {
-            sum += input.value;
-        }
-        return sum;
-    }
-
-    public static JSONArray arrayToJson(ArrayList<TxOutput> outputs) {
-        JSONArray jsonArray = new JSONArray();
-        for (TxOutput output : outputs) {
-            jsonArray.put(output.toJson());
-        }
-        return jsonArray;
     }
 
     public JSONObject toJson() {
@@ -116,5 +97,21 @@ public class TxOutput {
         }
         out += "]";
         return out;
+    }
+
+    public static int sum(ArrayList<TxOutput> inputs) {
+        int sum = 0;
+        for (TxOutput input : inputs) {
+            sum += input.getValue();
+        }
+        return sum;
+    }
+
+    public static JSONArray arrayToJson(ArrayList<TxOutput> inputs) {
+        JSONArray jsonArray = new JSONArray();
+        for (TxOutput input : inputs) {
+            jsonArray.put(input.toJson());
+        }
+        return jsonArray;
     }
 }

@@ -102,7 +102,8 @@ public class ObjectParserTest {
     private TxInput generateTestInput() {
         byte[] signature = new byte[]{0,0,0,0};
         byte[] txHash = new byte[]{1,1,1,1};
-        return new TxInput(signature, txHash, generateTestOutput());
+        byte[] prevOutputPubKey = new byte[]{2,2,2,2,2,2};
+        return new TxInput(signature, prevOutputPubKey, txHash, generateTestOutput().getOutputIndex(), generateTestOutput().getValue());
     }
 
     private TxOutput generateTestOutput() {
